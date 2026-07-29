@@ -4,7 +4,7 @@
 - **Author:** tech-lead · **Reviewers:** reviewer + enterprise-architect (cross-cutting) · **Approver:** tech-lead
 - **Date:** 2026-07-29
 - **Related:** [spec](../../../.specs/19_spec_eadros_devrel_os_summary.md) · ADR-0001…ADR-0016 ·
-  [manifest](../../../orchestrator/project.yaml) (`delivery_state.phase: design`) · milestones M2–M8
+  [manifest](../../orchestrator/project.yaml) (`delivery_state.phase: design`) · milestones M2–M8
 
 > Written *before* the code. Every claim below is sourced to an artifact in this repository; where
 > this RFC **proposes** something the specification does not yet state, it is marked

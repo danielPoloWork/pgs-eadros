@@ -7,6 +7,18 @@
 #   ASKED   — confirmed explicitly by the maintainer in the interview
 # Nothing here is inferred beyond those three. Phase 5 followed Q5.0 path (a) IMPORT: the
 # existing specification was mapped onto the six-section canonical shape, not re-authored.
+#
+# LOCATION (ADR-0003, maintainer decision 2026-07-29). This manifest moved from the prescribed
+# `orchestrator/project.yaml` at the repo root into `.eadros-core/orchestrator/`, so the whole
+# project lives in one vendorable directory. Pass the path explicitly to every EADOS tool:
+#   python .eados-core/tools/<tool>.py .eadros-core/orchestrator/project.yaml
+# Most tools take the manifest as an argument and resolve the project root by ASCENDING to the
+# nearest `.eados-core`/`.git` marker (render.project_root, #347), so they are unaffected.
+# ONE KNOWN REGRESSION: upgrade_advice.py probes two hardcoded locations only —
+# `orchestrator/project.yaml` and `.eados-core/orchestrator/project.yaml` — so `/eados upgrade`
+# will not find this file and will report the repo as unstamped. It is read-only advisory, so the
+# cost is a missing report rather than a wrong action. Recording `generated_by:` here does not fix
+# it; the probe is the thing that would need to widen, upstream in the factory.
 
 schema_version: 1
 manifest_rev: 5
