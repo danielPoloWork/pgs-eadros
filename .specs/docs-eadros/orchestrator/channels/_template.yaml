@@ -1,0 +1,66 @@
+# Channel profile TEMPLATE. Copy to channels/<name>.yaml. Schema: ./_schema.md
+#
+# Authoring a profile is the NORMAL path for a channel EADROS does not ship — not an error.
+# The order matters: verify the platform's automation terms FIRST, then derive the tier from
+# what you found. A tier chosen before the terms were read is a guess wearing a data structure.
+#
+# Required before this profile may be used:
+#   1. policy.verified_on set to the date you actually read the terms (not today's date by habit).
+#   2. policy.ban_scope established — account or domain. This is the field that decides how
+#      dangerous a wrong tier is; a domain-scoped ban outlives the account.
+#   3. tier derived, with tier_reason written in one line the maintainer will read at onboarding.
+#   4. api.delete established — the retraction runbook branches on it.
+#   5. An ADR recording the decision (ADR-0011 is the parent).
+
+channel:        ""                    # profile key; must match the filename
+display_name:   ""
+tier:           draft                 # auto | assisted | draft
+                                      # DEFAULT draft ON PURPOSE: an unverified channel is not
+                                      # automatable. Raising it is a positive act backed by
+                                      # policy.verified_on, never an omission.
+tier_reason:    ""                    # one line, stated to the maintainer at Phase 2
+
+policy:
+  automation_permitted: false         # true | false | conditional
+  self_promotion:       ""            # none | subreddit-level | discouraged | prohibited
+  ban_scope:            account       # account | domain
+  terms_url:            ""
+  verified_on:          ""            # YYYY-MM-DD — blocks the interview once older than 90 days
+  notes:                ""            # what you found that the fields above cannot express
+
+api:
+  write:               false          # true | false | conditional
+  auth:                none           # api_key | oauth2 | webhook | none
+  requires_app_review: false
+  token_lifetime_days: null           # null = non-expiring
+  endpoint_hint:       ""             # documentation pointer, not a hardcoded URL
+  delete:              unsupported    # supported | edit-only | unsupported
+
+limits:
+  max_chars:      null
+  markdown:       none                # full | limited | none
+  code_blocks:    unsupported         # fenced | indented | image-only | unsupported
+  images:         unsupported         # url | upload | unsupported
+  links:          { count: null, penalised: false }
+  tags:           { max: 0, style: none }
+  rate:           { unit: month, quota: null }
+
+cadence:
+  max_per_week:   1                   # the interview may LOWER this, never raise it
+  min_gap_hours:  72
+
+format:
+  front_matter:   false
+  canonical_url:  unsupported         # where supported, always point at the project's own docs
+  series:         unsupported
+  thread:         unsupported
+
+attribution:
+  utm:                unsupported
+  referrer_preserved: false           # false -> per-post attribution needs an owned redirect
+
+handoff:                              # REQUIRED when tier == draft
+  method:         prefilled_composer  # prefilled_composer | clipboard | manual
+  url_template:   ""
+  returns_url:    true
+  checklist:      []                  # what a human must confirm before posting

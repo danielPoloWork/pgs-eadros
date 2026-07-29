@@ -1,0 +1,274 @@
+# questionnaire.yaml — machine-readable DevRel intake question bank
+#
+# Companion to interview.md (the human protocol). Each question maps to one or more manifest
+# keys. `default` is what the architect assumes when it does not ask; `ask_when` states the
+# condition under which the question is actually worth posing. `follow_ups` are conditional
+# deeper questions. Phases are walked in order.
+#
+# The architect's rule: ask only questions whose answer it cannot safely default for the stated
+# program, and always echo the assumed defaults back for confirmation.
+#
+# LOADER CONSTRAINTS (inherited from the EADOS questionnaire, same yamlmini reader):
+#   - prompts stay SINGLE-LINE; a folded multi-line quoted scalar is rejected loudly.
+#   - multi-line `ask` lists are BLOCK sequences; a flow sequence ([...]) spanning lines is rejected.
+
+meta:
+  version: 1
+  conducted_in: maintainer_language     # answers transcribed to English in devrel.yaml
+  output: .eadros-core/devrel.yaml    # inside the installation root (ADR-0004); never the host root
+  # Record asked|defaulted|imported|inferred_from_sample per top-level answer key in the
+  # manifest's interview: block AS the interview proceeds (never retrospectively); copy
+  # `version` above into interview.questionnaire_version.
+  provenance: as-you-go
+  # inferred_from_sample is the value this domain adds to the EADOS vocabulary: a voice
+  # fingerprint extracted from the maintainer's own writing (Q3.1) is neither asked nor
+  # defaulted, and must be shown back before it is adopted.
+  upstream_import:
+    source: orchestrator/project.yaml   # the EADOS manifest, when the repo is EADOS-governed
+    keys: [identity, ownership, i18n, announce, spec.objective]
+    rule: "everything it answers is imported, never re-asked (EADOS Q4.8 is Phase 2's seed)"
+
+phases:
+
+  - id: 0
+    name: Frame
+    questions:
+      - id: Q0.1
+        prompt: "Which repository, and what does it do in one sentence?"
+        default: from_eados_manifest
+        sets: [REPO, PROJECT_TAGLINE]
+      - id: Q0.2
+        prompt: "Who should find this — the reader with the problem, not a demographic?"
+        sets: [AUDIENCE]
+        # no default: the most load-bearing answer in the interview; never guess it silently
+      - id: Q0.3
+        prompt: "Goal of the program?"
+        choices: [adoption, contribution, credibility, hiring]
+        default: adoption
+        sets: [PROGRAM_GOAL]
+      - id: Q0.4
+        prompt: "Repository visibility, now and intended?"
+        choices: [public, private, private-now-public-later]
+        default: public
+        sets: [REPO_VISIBILITY]         # private -> safety.path_allowlist defaults to deny-all
+      - id: Q0.5
+        prompt: "Program posture (raised governance bar: sign-off chain, no auto tier, mandatory disclosure)?"
+        choices: [standard, enterprise]
+        default: standard
+        sets: [governance.posture]
+
+  - id: 1
+    name: Positioning
+    note: "Runs BEFORE channels by doctrine. /eadros launch later audits against what is captured here."
+    questions:
+      - id: Q1.1
+        prompt: "What category is this, in the words a reader would search before knowing it exists?"
+        sets: [CATEGORY, KEYWORDS]
+      - id: Q1.2
+        prompt: "Which projects will a reader compare this to?"
+        sets: [COMPARABLES]             # in the manifest, never hardcoded: competitor lists rot
+      - id: Q1.3
+        prompt: "The honest differentiator, in one sentence a competitor could not also claim?"
+        sets: [DIFFERENTIATOR]
+      - id: Q1.4
+        prompt: "What is the proof — a benchmark, a demo, a diff, a decision the reader can check?"
+        sets: [PROOF_ASSETS]
+      - id: Q1.5
+        prompt: "Is there a 60-90s demo above the fold, and where does it live?"
+        default: none
+        sets: [DEMO_REF]                # none -> becomes program roadmap item 1, not a blocker
+    follow_ups:
+      - when: "DIFFERENTIATOR is a feature list"
+        ask:
+          - "Which of these could a competitor's README also claim?"
+          - "What remains once those are removed?"
+        rule: "do not advance to Phase 2 until positioning settles — unreviewable positioning yields unreviewable content"
+
+  - id: 2
+    name: Channels
+    note: "The maintainer chooses WHETHER; channels/<name>.yaml decides HOW (the tier). Never offer the tier as a choice."
+    questions:
+      - id: Q2.1
+        prompt: "Which channels do you want to reach?"
+        default: from_eados_announce    # EADOS Q4.8 ANNOUNCE_CHANNELS, imported
+        validate: channel_profile_exists  # else: author channels/<name>.yaml from _template + ADR first
+        sets: [CHANNELS]
+      - id: Q2.2
+        prompt: "Confirm each channel's tier and the one-line reason from its profile."
+        derived_from: "channels/<name>.yaml tier"
+        asked: false                    # STATED for confirmation, never offered as an option
+        sets: [channels.tier]
+      - id: Q2.3
+        prompt: "For each channel: where does the token live (location, never the value), who owns it, what scope and expiry?"
+        sets: [channels.credential_ref, channels.owner, channels.scope, channels.expires_at]
+      - id: Q2.4
+        prompt: "Per-channel cadence ceiling (posts per week, minimum gap)?"
+        default: from_channel_profile
+        sets: [channels.cadence]        # a ceiling the Planner cannot exceed, not a target
+      - id: Q2.5
+        prompt: "Quiet hours and timezone — no publishing outside this window?"
+        default: { window: "08:00-20:00", days: weekdays }
+        sets: [SCHEDULE_WINDOW, TIMEZONE]
+      - id: Q2.6
+        prompt: "Per-channel locale?"
+        default: from_eados_i18n
+        sets: [channels.locales]
+    follow_ups:
+      - when: "any channel tier == draft"
+        ask:
+          - "Who performs the manual post for this channel?"
+          - "Do you accept the hand-off loop (we prepare, you post, you paste the URL back)?"
+        sets: [channels.owner]
+      - when: "any channel tier == assisted"
+        ask:
+          - "Monthly write quota for this channel?"
+          - "Is the platform app already approved, or still pending?"
+        rule: "an unapproved app is a ROADMAP ITEM, not a channel — never record it as live"
+        sets: [channels.quota, channels.app_status]
+      - when: "count(locales) > 1"
+        ask: ["translated or authored per locale (Q3.7 becomes mandatory)?"]
+        sets: [locales.mode]
+      - when: "channel policy verified_on older than 90 days"
+        ask: ["re-verify this platform's automation terms before the tier is trusted?"]
+        rule: "surface BEFORE Phase 2 settles — a stale tier is how an account gets banned"
+
+  - id: 3
+    name: Voice
+    note: "The substantive phase. Voice is elicited by SAMPLE, not by adjective, and ends in a calibration loop."
+    questions:
+      - id: Q3.1
+        prompt: "Give me two or three things you have written that sound like you (posts, README, an ADR, a long commit message)."
+        sets: [VOICE_SAMPLES, VOICE_PROFILE]
+        extracts: [sentence_length, person, jargon_density, hedging, code_to_prose_ratio, formatting, opening_move]
+        provenance: inferred_from_sample
+        rule: "show the extracted fingerprint back in plain language before adopting it"
+        fallback: "no sample -> seed from voices/<slug>.yaml and say which, explicitly"
+      - id: Q3.2
+        prompt: "Does the account speak as a person or as the project?"
+        choices: [person, project]
+        default: person
+        sets: [voice.person, voice.byline]
+      - id: Q3.3
+        prompt: "Which story shapes are you willing to publish, and at what monthly ceiling?"
+        # postmortem and opinion default OFF and MUST be asked: publishing a failure story or a
+        # stated opinion under someone's name without consent is a reputational act.
+        default: { postmortem: false, opinion: false, subtraction: true, tradeoff: true, benchmark: true, buildlog: true, howto: true, release: true }
+        sets: [voice.archetypes]
+      - id: Q3.4
+        prompt: "Forbidden words and constructions, seeded from the profile — anything to add?"
+        default: from_voice_profile
+        sets: [voice.forbidden]         # a deterministic lint, not an LLM judgment call
+      - id: Q3.5
+        prompt: "Claim discipline — every factual claim carries a source ref, snippets extracted verbatim at a SHA; any exception?"
+        default: strict
+        sets: [voice.claim_discipline]
+      - id: Q3.6
+        prompt: "Is AI assistance disclosed, where, and in what words?"
+        default: { mode: standing_line, per_channel: true }
+        ask_when: "governance.posture == standard"   # mandatory, not asked, under enterprise
+        sets: [voice.disclosure]
+      - id: Q3.7
+        prompt: "Per non-canonical locale: translated (derived) or authored (written natively)?"
+        default: translated
+        ask_when: "count(locales) > 1"
+        sets: [locales.mode]
+    calibration:
+      # The phase ends on a sample, not on an answer.
+      trigger: "before writing the voice profile"
+      procedure:
+        - "take one real recent commit from the repository"
+        - "generate three short drafts under the captured profile"
+        - "maintainer picks one and edits it freely"
+        - "diff the edit against the draft and fold the delta into the fingerprint"
+      rule: "what they CUT is worth more than what they kept"
+      expected_rounds: 2
+      warn_when: "converged in one round — usually politeness, not fit"
+      sets: [voice.calibration]
+      rerun: "/eadros onboard --recalibrate"
+
+  - id: 4
+    name: Governance
+    questions:
+      - id: Q4.1
+        prompt: "Which repository paths may be quoted or shown, and what is the max quotable diff length?"
+        default: { public: "src/**,docs/**", private: deny-all, max_diff_lines: 30 }
+        sets: [safety.path_allowlist, safety.deny, safety.max_diff_lines]
+      - id: Q4.2
+        prompt: "Terms that must never appear (customer names, internal hosts, unreleased feature names, employer ids)?"
+        sets: [safety.deny_terms]
+        note: "secret scanning runs unconditionally and is NOT configurable off — state this, do not ask it"
+      - id: Q4.3
+        prompt: "Embargo rules — unmerged branches, commit age floor, private-repo hold?"
+        default: { unmerged: block, min_commit_age_hours: 24, private_repo: block }
+        sets: [safety.embargo]
+      - id: Q4.4
+        prompt: "Who approves, and through which surface (CLI, dashboard, Discord/Telegram)?"
+        default: { review_surface: cli }
+        sets: [governance.approvers, governance.review_surface]
+      - id: Q4.5
+        prompt: "Approval strength — edit-required (final text must differ from the draft) or as-is permitted?"
+        default: edit-required
+        sets: [governance.approval_mode]
+        # converts the human gate from a rubber stamp into an editorial act; --as-is is
+        # permitted but always recorded in the audit trail
+      - id: Q4.6
+        prompt: "Budget ceilings — cost per week, max campaigns per run, max reviewer iterations, and the hard-stop action?"
+        default: { max_reviewer_iterations: 2, on_exceed: pause }
+        sets: [budget.cost_per_week, budget.max_campaigns_per_run, budget.max_reviewer_iterations, budget.on_exceed]
+        rule: "numeric, never adjectives — a gate, not a promise (same discipline as an EADOS hard NFR budget)"
+      - id: Q4.7
+        prompt: "Who holds the kill switch, and on which channel are they reachable?"
+        sets: [governance.kill_switch_owner]
+    follow_ups:
+      - when: "governance.posture == enterprise"
+        ask:
+          - "Who signs off from legal/comms?"
+          - "Confirm: a second approver is required for benchmark and opinion archetypes."
+        sets: [governance.approvers]
+      - when: "REPO_VISIBILITY != public"
+        ask:
+          - "Confirm deny-all is the starting posture — nothing is quotable until you opt paths in."
+        sets: [safety.path_allowlist]
+
+  - id: 5
+    name: Cadence
+    questions:
+      - id: Q5.1
+        prompt: "What does one normal week look like, within the Phase 2 ceilings?"
+        default: { substantive: 1, opportunistic: 1 }
+        sets: [cadence.weekly]
+      - id: Q5.2
+        prompt: "Lay out ALL milestone campaigns up front — for each: trigger, channels, archetype, and the pre-condition that must hold before it may fire."
+        sets: [campaigns]
+        rule: "a campaign with no pre-condition is how a project spends its one launch on a README that was not ready"
+      - id: Q5.3
+        prompt: "One primary success metric with a number, at 90 days?"
+        sets: [success.primary_metric, success.target]
+        note: "attribution is directional, not causal (ADR-0015) — say so when capturing it"
+
+# Worked examples — the ask-vs-default call as a few-shot policy surface the lint shape-checks.
+# `ask` = pose the question; `default` = assume the documented default and echo it back.
+examples:
+  verdicts: [ask, default]
+  cases:
+    - input: "Q2.1 channels, on a repo whose EADOS manifest already lists X and Discord under announce"
+      verdict: default
+      why: "imported from Q4.8 — echo the two channels back and ask only what EADOS did not settle"
+    - input: "Q2.2 the tier for Hacker News"
+      verdict: default
+      why: "never asked at all — the profile sets tier: draft, and the architect STATES it with its reason"
+    - input: "Q0.2 the audience, on a brief that names only the technology"
+      verdict: ask
+      why: "the reader is what the Angle and Reviewer agents aim at; a wrong guess mis-frames every post"
+    - input: "Q3.3 the postmortem archetype, on a maintainer who has not mentioned failure stories"
+      verdict: ask
+      why: "defaults OFF by design — consent to publish a failure under your own name is never assumed"
+    - input: "Q3.4 the forbidden list, when a voice profile already seeds one"
+      verdict: default
+      why: "seed it, show it, invite additions — do not interrogate a maintainer for a list you already have"
+    - input: "Q4.6 the weekly cost ceiling, on any program"
+      verdict: ask
+      why: "an unbounded agent pipeline is this architecture's classic failure; the number must be the maintainer's"
+    - input: "Q3.6 disclosure wording, under governance.posture == enterprise"
+      verdict: default
+      why: "the ask_when is false — disclosure is mandatory there, so state the requirement rather than offering a choice"

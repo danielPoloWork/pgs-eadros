@@ -1,0 +1,483 @@
+# project.yaml — the single source of truth for the EADROS project.
+#
+# Written by `/eados init` (intake interview Phases 0-5). Every value is traceable to one of
+# three sources, named per section:
+#   REPO    — an artifact in this repository (.specs/**, LICENSE, git)
+#   PROFILE — .eados-core/orchestrator/profiles/typescript.yaml (AGENTS.md §5 step 2/3 merge)
+#   ASKED   — confirmed explicitly by the maintainer in the interview
+# Nothing here is inferred beyond those three. Phase 5 followed Q5.0 path (a) IMPORT: the
+# existing specification was mapped onto the six-section canonical shape, not re-authored.
+#
+# LOCATION (ADR-0003, maintainer decision 2026-07-29). This manifest moved from the prescribed
+# `orchestrator/project.yaml` at the repo root into `.eadros-core/orchestrator/`, so the whole
+# project lives in one vendorable directory. Pass the path explicitly to every EADOS tool:
+#   python .eados-core/tools/<tool>.py .eadros-core/orchestrator/project.yaml
+# Most tools take the manifest as an argument and resolve the project root by ASCENDING to the
+# nearest `.eados-core`/`.git` marker (render.project_root, #347), so they are unaffected.
+# ONE KNOWN REGRESSION: upgrade_advice.py probes two hardcoded locations only —
+# `orchestrator/project.yaml` and `.eados-core/orchestrator/project.yaml` — so `/eados upgrade`
+# will not find this file and will report the repo as unstamped. It is read-only advisory, so the
+# cost is a missing report rather than a wrong action. Recording `generated_by:` here does not fix
+# it; the probe is the thing that would need to widen, upstream in the factory.
+
+schema_version: 1
+manifest_rev: 5
+
+# Q0.4 — development target [ASKED: confirmed]. Loads domains/software.yaml: engineering-only
+# roles, PRD + RFC artifacts, SemVer milestones, no hard-budget NFR axes.
+domain: software
+
+delivery_state:
+  phase: scaffold            # init|design|plan|scaffold|audit|migrate
+  # Transition ledger. Emitted verbatim by phase_runner.py --propose design --expect-rev 0;
+  # confirmed_by is the owner's explicit authorization, not the agent's.
+  checkpoints:
+    - { from: init, to: design, gates: ['manifest-valid'], at: 2026-07-29, confirmed_by: danielPoloWork, gate_results: { manifest-valid: OK } }
+    - { from: design, to: plan, gates: ['rfc-approved'], at: 2026-07-29, confirmed_by: danielPoloWork, gate_results: { rfc-approved: OK } }
+    - { from: plan, to: scaffold, gates: ['roadmap-covers-rfcs'], at: 2026-07-29, confirmed_by: danielPoloWork, gate_results: { roadmap-covers-rfcs: OK } }
+  # RFC-0001 approved by the tech-lead on 2026-07-29 (rfc_check.py: OK). Recorded here by the
+  # enterprise-architect acting as the phase's state_writer — authority.yaml grants this file to
+  # that role alone, so the authoring tech-lead may not write it (#346, ADR-0025). Ids, not content.
+  refs: { rfcs: [RFC-0001], milestones: [M1, M2, M3, M4, M5, M6, M7, M8, M9], prs: [], releases: [] }
+
+identity:
+  # REPO: .specs/19_spec_eadros_devrel_os_summary.md §1 + .specs/docs-eadros/vision/VISION.md;
+  # project_name from git remote origin (danielPoloWork/pgs-eadros). project_series ASKED.
+  project_name:    "pgs-eadros"
+  project_slug:    "eadros"
+  project_title:   "EADROS — Enterprise Agentic Developer Relations OS"
+  project_tagline: "Governed agent pipeline that turns real engineering activity into human-approved developer-relations posts."
+  project_series:  "Production-Grade Systems"
+  project_kind:    cli
+
+ownership:
+  # REPO: git remote origin, git config user.name, LICENSE (MIT, Copyright (c) 2026 Daniel Polo),
+  # git symbolic-ref refs/remotes/origin/HEAD -> origin/master.
+  owner:           "danielPoloWork"
+  maintainer:      "Daniel Polo"
+  author:          "Daniel Polo"
+  year:            "2026"
+  license_id:      MIT
+  default_branch:  master          # the repository's ACTUAL default branch, not the `main` default
+  assignee:        "danielPoloWork"   # Q4.5: the owner, never @me (it resolves to the drafting actor)
+
+language:
+  # REPO: "EADROS process (Node.js / TypeScript)" — architecture/CONTAINERS.md:9,
+  # ADR-0016-local-first-single-file-store.md:13, spec §4.
+  # PROFILE: default_standard, src_ext, namespace_pattern "@{group_leaf}/{project_slug}".
+  # ASKED: group_path (required, no default — interview.md:88 forbids a fallback).
+  lang:            typescript
+  lang_name:       "TypeScript"
+  lang_standard:   "TypeScript 5.x, ES2022, Node 22 LTS"   # floor set by RFC-0001 D7 (was Node 20 LTS)
+  secondary_lang:  sql             # Q1.2: the SQLite schema the CLI owns — architecture/DATA_MODEL.md
+  group_path:      "dev/d4np"
+  group_dotted:    "dev.d4np"
+  namespace:       "@d4np/eadros"
+  src_ext:         ts
+  comment_lang:    "en"
+  public_include_hint: "import { ... } from '@d4np/eadros';"
+
+toolchain:
+  # PROFILE: copied from profiles/typescript.yaml (render.py does not read profiles; AGENTS.md §5
+  # step 3 makes the architect responsible for the merge). No project-specific override is stated
+  # anywhere in .specs/, so the profile stands unmodified.
+  #
+  # STATUS — INITIAL BASELINE, NOT AN IRREVOCABLE DECISION (maintainer, 2026-07-29). Every value
+  # in this section and in `ci:` below is the profile's starting point. `design` may change any of
+  # them where a better technical requirement emerges — notably the Node/TS version floor and the
+  # CI matrix, which .specs/ never states, and the SQLite driver, which the FTS5 + embeddings
+  # requirement constrains. A change here is a normal design outcome, not a deviation.
+  #
+  # EXERCISED 2026-07-29 by RFC-0001 (approved): D7 raised the runtime floor and replaced the CI
+  # matrix (see `language.lang_standard` and `ci:` below); D8 chose `better-sqlite3` for V1 with
+  # `node:sqlite` as a triggered migration target. The values NOT touched below remain the profile's.
+  build_tool:      "tsup (esbuild) / tsc --build"
+  pkg_manager:     "pnpm (workspaces, locked)"
+  test_framework:  "Vitest (or Jest)"
+  formatter:       "Prettier"
+  linter:          "ESLint (typescript-eslint, type-aware) + tsc --noEmit --strict"
+  sanitizers:      "tsc --strict (type soundness), vitest --detectOpenHandles (leak/handle), eslint --max-warnings 0"
+  coverage_tool:   "Vitest coverage (v8) / c8"
+  coverage_target: 80
+  doc_tool:        "TypeDoc"
+  version_file:    "version.ts"
+  version_const_hint: "export const VERSION = 'X.Y.Z'"
+  package_ecosystem: "npm"
+  commands:
+    build:        "pnpm build"
+    test:         "pnpm test"
+    format_check: "prettier --check ."
+    lint:         "eslint . --max-warnings 0 && tsc --noEmit"
+    bench:        "pnpm vitest bench"
+
+ci:
+  # PROFILE: profiles/typescript.yaml `ci:` block, THEN superseded by RFC-0001 D7 (approved
+  # 2026-07-29). The matrix is now the FULL product of OS x Node major, not a sample: D8 puts a
+  # native addon (better-sqlite3) in the dependency graph, which makes `(OS, Node ABI)` the actual
+  # risk surface — a cell with no prebuilt binary means a source compile on a user's machine and a
+  # breached "cold npx <= 60 s" budget. Node 18 and 20 are dropped because both are out of support.
+  tier1_platforms: "Linux / Windows / macOS on Node 22, 24 LTS"
+  matrix:
+    - { os: ubuntu-24.04, toolchain: "node-22", preset: test }
+    - { os: ubuntu-24.04, toolchain: "node-24", preset: test }
+    - { os: windows-2022, toolchain: "node-22", preset: test }
+    - { os: windows-2022, toolchain: "node-24", preset: test }
+    - { os: macos-14,     toolchain: "node-22", preset: test }
+    - { os: macos-14,     toolchain: "node-24", preset: test }
+  setup_steps: |
+    - name: Set up pnpm
+      uses: pnpm/action-setup@v4
+    - name: Set up Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.toolchain == 'node-24' && '24' || '22' }}
+        cache: pnpm
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+  extra_jobs: |
+    lint:
+      name: lint / eslint + tsc + prettier
+      runs-on: ubuntu-24.04
+      needs: bootstrap
+      if: needs.bootstrap.outputs.ready == 'true'
+      steps:
+        - uses: actions/checkout@v6
+        - uses: pnpm/action-setup@v4
+        - uses: actions/setup-node@v4
+          with: { node-version: '22', cache: pnpm }
+        - run: pnpm install --frozen-lockfile
+        - run: pnpm prettier --check . && pnpm eslint . --max-warnings 0 && pnpm tsc --noEmit
+  build_manifest: package.json
+
+governance:
+  # ASKED: posture. REPO: scopes derived from the nine pipeline components named in
+  # architecture/COMPONENTS.md plus the standard build/tests/docs/ci (Q4.3).
+  # house_rules is empty because .eados-core/config/house-rules.md carries no body.
+  posture: enterprise
+  scopes: [miner, gate, angle, copywriter, reviewer, queue, scheduler, publisher, channels, metrics, kb, store, events, cli, build, tests, docs, ci]
+  version_start: "pre-1.0 milestone-driven"
+  start_version: "0.0.0"
+  house_rules: ""
+  capabilities:
+    bench:      true    # REPO: spec §3 measures mining latency by "miner benchmark";
+                        # EVENTS.md:73 defines dev.eadros.bench.result_recorded.v1
+    threading:  false   # PROFILE + REPO: single-threaded event loop; single-writer WAL store
+    public_api: true    # REPO: commands/README.md IS the public surface
+    i18n:       false   # no documentation-translation requirement stated in .specs/
+    packaging:  true    # REPO: `npx eadros weekly` (ADR-0016:38); NFR "cold npx run <= 60 s"
+    service:    false   # REPO: "One process, one file, no services" — CONTAINERS.md:3
+    announce:   false   # not stated in .specs/; Q4.8 default off
+    layered:    false   # Q5.4a is not offered for project_kind: cli
+    api_spec:   false   # service/web only
+
+i18n:
+  default_lang: "en"
+  targets: []
+
+announce:
+  channels: []
+
+spec:
+  # Q5.0 path (a) — IMPORT. Source: .specs/19_spec_eadros_devrel_os_summary.md (v2.0) and the
+  # 16 ADRs / C4 views / eval strategy under .specs/docs-eadros/. Requirements are transcribed,
+  # not re-authored; canonical detail stays in those files and is referenced, not duplicated.
+  provenance:       import
+
+  objective: |
+    Transform every engineering activity into discoverable, high-impact technical content
+    (vision/VISION.md). EADROS observes real engineering activity in a repository — commits,
+    pull requests, releases, ADR changes, CI gate intercepts — identifies the events that carry
+    a technical story, and runs a governed agent pipeline that drafts, checks and distributes
+    it. A human approves everything that ships.
+
+    It exists because high-quality open-source projects fail from absent distribution, not
+    absent quality: maintainers have no time for Developer Relations, and generic social-media
+    tooling produces the promotional register developer communities reject on sight.
+
+    Three constraints shape the system, and none of them is "generate good text" — text
+    generation is the commodity part. (1) Most destinations forbid what is being automated, and
+    over-automation can get the promoted project's domain permanently banned from the
+    highest-signal channel in its ecosystem (ADR-0011). (2) Detectably generated output
+    falsifies the entire thesis in one post, unrecoverably — the product is authenticity, so a
+    recognisable model register is a category failure, not a quality issue (ADR-0012). (3) The
+    pipeline reads private repositories, holds publishing credentials, and ingests text any
+    stranger can write on a public repository's pull request (ADR-0014).
+
+    Scope: one repository per program, a solo maintainer or small team, at most two substantive
+    posts per week, 6-8 channels. Local-first: one CLI, one SQLite file, no servers.
+
+  functional_reqs:
+    - "Story mining: score repository activity deterministically; only the top K reach a model."
+    - "Governed drafting: angle -> draft -> review, per channel and locale, within an iteration cap."
+    - "Channel-native output: each destination's formatting rules enforced from its profile."
+    - "Tiered publishing: `auto` dispatches on approval; `assisted` dispatches under quota; `draft` never dispatches — it prepares a payload, a composer link and a checklist for a human, then records the returned URL so the channel stays instrumented."
+    - "Human approval gate: nothing publishes without an approval record. Approval is invalid unless the maintainer edited the draft, or passed `--as-is`, which is recorded."
+    - "Retraction: a runbook branching on whether the channel supports removal at all."
+    - "Measurement: daily append-only snapshots; lift reported as directional, never causal."
+    - "Onboarding interview: channels, voice, safety and budget elicited once, with provenance recorded per answer; imports the EADOS manifest where present rather than re-asking."
+    - "Wave 0 positioning gate: `launch` audits whether the project explains itself (value proposition in the first screen, 60-90 s demo above the fold, install command visible, high-intent keywords, repo topics and description set) and campaigns declare a pre-condition on its score."
+
+  nonfunctional_reqs:
+    - "Model calls during mining: exactly 0 — verified by the eval cost suite."
+    - "Cost per published post: <= EUR 0.15 — measured per stage via `budget_ledger`."
+    - "Mining latency: a 500-commit window scored in <= 10 s — miner benchmark."
+    - "Candidate to review queue: p95 <= 3 min — pipeline timestamps."
+    - "Human review time per post: <= 5 min — review queue timestamps."
+    - "Leak-gate recall on secrets: 1.0, an absolute — adversarial suite, hard gate with no threshold negotiation."
+    - "Prompt-injection containment: 1.0, an absolute — adversarial suite; success is containment (attacker text never reached a credentialed component as instruction), not model refusal."
+    - "Double-publish rate: 0, an absolute — property test plus `posts.idempotency_key`."
+    - "Gate false-positive rate: <= 0.10 — `gate_verdicts.false_positive`, reported by `audit`."
+    - "`auto`-tier publish success: >= 99% excluding platform outages — outbox outcomes."
+    - "Metrics snapshot gap rate: <= 1% of days — `post_metrics.is_gap`."
+    - "Install cost: 0 services; a cold `npx` run in <= 60 s — CI on a clean image."
+    - "Installation containment: every asset the product installs lives under `.eadros-core/`, the installation root, plus a CLOSED allowlist of paths external systems fix - `.claude/commands/eadros/**` (create-only) and a consented one-line `.gitignore` append (ADR-0004). Measured by the item-1.10 gate: install into a populated fixture repository on a clean image and fail on any path outside the allowlist."
+    - "Installation non-invasiveness: ZERO pre-existing files modified - not README.md, AGENTS.md, CLAUDE.md, GEMINI.md, ROADMAP.md, CHANGELOG.md, SECURITY.md, package.json, nor any file the host project already had; the one exception is the consented `.gitignore` append, which appends and never rewrites. Measured by checksumming the fixture repository before and after install (ADR-0004)."
+    - "Clean uninstallation: removing `.eadros-core/` and the two allowlisted paths returns the host repository to its pre-install checksum set - a product that cannot be cleanly removed was never contained (ADR-0004)."
+    - "Channel profile freshness: a profile older than 90 days blocks onboarding, because a compliance rule that cannot be re-verified is silently wrong within a year."
+    - "Observability: every event persisted with `correlation_id` and `causation_id`, so one query returns the complete account of how one CI failure became three posts."
+
+  architecture: |
+    One process, one file, no services (architecture/CONTAINERS.md). A Node.js/TypeScript CLI
+    holds an in-process event bus whose events are persisted to the same SQLite file in the same
+    transaction as the state change they describe; the knowledge base (FTS5 + embeddings), the
+    outbox, the budget ledger and the metrics time series live in that one file (ADR-0016).
+
+    The orchestrator is a FIXED DAG with models inside the nodes, not an agent that plans the
+    pipeline. Letting a model choose the graph would add non-determinism, unbounded cost and an
+    unauditable trail to a system whose entire value is governance.
+
+      repository activity
+        -> 1 Story miner      (deterministic, no model call, ever)
+        -> 2 PrePublishGate   (deterministic, pass 1 of 2, BEFORE any model sees the content)
+        -> 3 Angle            (LLM, cheap tier)
+        -> 4 Copywriter       (LLM, mid tier)  <-- critique --  5 Reviewer (LLM, strong tier)
+                              (max 2 iterations, hard)
+        -> 2 PrePublishGate   (deterministic, pass 2 of 2, + claims resolution, voice lint)
+        -> 6 Review queue     (human gate — no agent path exists)
+        -> 7 Scheduler        (deterministic: channel ceilings, window, preconditions)
+        -> 8 Publisher        (deterministic: tier branch, outbox, idempotency, reconcile)
+             auto | assisted | draft -> a human posts
+        .. 9 Metrics collector (deterministic, daily snapshot)
+      Knowledge base supports 3, 4, 5 and the miner's dedup; it is not in the DAG.
+
+    Three of the nine components hold a model — framing, writing and critique, where judgment
+    genuinely lives. The other six carry a GUARANTEE rather than a judgment, and a guarantee
+    implemented in a prompt can only ever be an aspiration: the miner must be reproducible or the
+    cost model has no floor; the gate must have recall 1.0 on planted secrets; the publisher must
+    never double-post; the scheduler must never exceed a channel ceiling.
+
+    Capability tiers (ADR-0011) are derived from each destination's dated profile and stated to
+    the maintainer, never offered as a choice: they choose WHETHER to use a channel, the profile
+    decides HOW. `draft` is not a missing feature but the correct permanent answer for platforms
+    whose value depends on submissions being human, and such adapters have no dispatch path in
+    code at all.
+
+    INSTALLATION ROOT — a binding architectural decision, confirmed by the maintainer on
+    2026-07-29 and to be PRESERVED through every later phase. The runtime is designed so that
+    every asset the product installs is contained in `.eadros-core/`, which IS the installation
+    root of the system. The directory is already the unit the spec treats as movable — `upgrade`
+    migrates `.eadros-core/` plus the manifest to a newer core version (commands/upgrade.md) —
+    and this decision makes that containment a property of the design rather than a convention:
+    one directory to install, to upgrade, to inspect and to remove. The design phase is to record
+    it as an ADR and derive the concrete layout from it; it is not open for silent revision.
+
+    Canonical detail (not duplicated here): architecture/SYSTEM_CONTEXT.md, CONTAINERS.md,
+    COMPONENTS.md, DATA_MODEL.md, EVENTS.md, STATE_MACHINE.md, SEQUENCE_DIAGRAMS.md.
+
+  architecture_style: "Event-Driven"
+
+  patterns:
+    - { name: "Outbox", why: "Dispatch commits intent before the external call; UNIQUE(idempotency_key) makes double-publish structurally impossible rather than procedurally avoided." }
+    - { name: "Adapter", why: "One module per destination, branching on the channel profile's tier; draft-tier adapters expose no dispatch path at all (ADR-0007, ADR-0011)." }
+    - { name: "Fixed DAG pipeline with models in the nodes", why: "The orchestrator never lets a model plan the graph — that is what keeps cost bounded and the trail auditable (COMPONENTS.md)." }
+    - { name: "State machine with a transition ledger", why: "Campaign and post have separate lifecycles, because a partial publish — live on one channel, awaiting a human on another, failed on a third — is the normal outcome (STATE_MACHINE.md)." }
+    - { name: "Persisted event log with correlation and causation ids", why: "Events are written in the same transaction as the state change, so one query reconstructs how a CI failure became three posts (ADR-0002, EVENTS.md)." }
+    - { name: "Provider abstraction with tier routing", why: "Hosted and local (Ollama) model providers sit behind one interface, which is where the cost ceiling is enforced (ADR-0005, ADR-0013)." }
+
+  pattern_discipline: advisory
+
+  layers: []
+
+  public_api:
+    - "`eadros init` — frames the program: interview Phase 0-1, imports the EADOS manifest, writes the devrel.yaml skeleton. Drafts; the human confirms."
+    - "`eadros onboard [--recalibrate]` — the channel + voice interview, ending in the voice calibration loop. The human answers and owns every tier acknowledgement."
+    - "`eadros adopt` — brownfield intake for a repo that already posts: read-only presence map, goal menu, `adoption:` block. Proposes, never migrates."
+    - "`eadros doctor` — preflight: tokens present, scopes sufficient, quota remaining, credentials near expiry, channel policies older than 90 days. Reports; fixes nothing."
+    - "`eadros status` — where every campaign sits in the state machine, budget consumed, review queue depth. Read-only."
+    - "`eadros upgrade` — migrates .eadros-core/ and the manifest to a newer core version. Proposes a diff; the human applies."
+    - "`eadros launch` — the Wave 0 audit: deterministic repo checks plus a rubric-scored positioning review; writes positioning.last_audit. A gate, not a report."
+    - "`eadros mine` — deterministic story scoring, no model calls; prints scored candidates with their signals. Read-only, free, inspectable."
+    - "`eadros draft <id>` — runs the agent pipeline for one mined candidate through to the review queue. Drafts; never publishes."
+    - "`eadros weekly` — the cadence run: mine, rank and draft within cadence.weekly and every channel ceiling. Drafts; never publishes."
+    - "`eadros release` — fires on release.published: mines release notes, breaking changes, trade-offs. Drafts; never publishes."
+    - "`eadros campaign <id>` — runs a milestone campaign after evaluating its precondition; refuses when the precondition is unmet."
+    - "`eadros review` — opens the human review queue on the configured surface."
+    - "`eadros approve --id <id> [--as-is]` — HUMAN ONLY; the agent may never call it. Rejected under approval_mode: edit-required unless the final text differs from the draft."
+    - "`eadros reject --id <id> --reason <text>` — human only; the reason feeds the eval corpus."
+    - "`eadros publish` — dispatches approved content: auto publishes, assisted publishes under quota, draft never dispatches (payload, composer link and checklist instead)."
+    - "`eadros retract --id <id>` — the wrong-post runbook, branching on the channel's api.delete: supported -> delete, edit-only -> correct in place, unsupported -> draft a correction and say plainly that removal is impossible."
+    - "`eadros pause` / `eadros resume` — the kill switch: anyone may pause, only governance.kill_switch_owner may resume, and resume re-gates the held queue."
+    - "`eadros metrics` — the daily append-only traffic snapshot. Not optional and not on-demand: the GitHub Traffic API retains roughly 14 days."
+    - "`eadros digest` — the maintainer summary: what shipped, what it cost, what moved. Read-only."
+    - "`eadros audit` — governance audit: budget adherence, leak-gate false-positive rate, tier compliance, stale channel policies, approvals that used --as-is."
+    - "`eadros eval` — runs the verification suites: miner ranking, reviewer per-class detection, injection containment, leak recall, channel contracts, cost regression."
+    - "Global flags: `--dry-run` (full pipeline against a mock publisher; the default for a program's first week), `--explain` (scoring signals, model routed per stage, token/cost estimate before spending), `--budget-check` (refuses to start when the run would exceed budget.cost_per_week)."
+    - "Deliberately absent: there is no `eadros auto` and no daemon that publishes unattended. Every path to a live post runs through `approve`, and `approve` is a human verb."
+
+  verification: |
+    Six suites, gated PER CLASS with no aggregate score (eval/README.md). The organising decision
+    is that every safety guarantee sits in a deterministic component, so it can be a test result
+    rather than a hope.
+
+    - Deterministic suites block CI on any regression: miner ranking (exclusion safety gated at
+      1.0), channel contracts and formatter snapshots, cost regression, and the six state-machine
+      property tests.
+    - Generative suites (Angle, Copywriter, Reviewer) run N >= 20 times per case and gate on the
+      LOWER CONFIDENCE BOUND, never the mean — a prompt change that improves the average while
+      doubling the variance has made the system worse.
+    - The adversarial suite is a hard gate with no threshold negotiation: prompt-injection
+      containment and leak recall on secrets must both be 1.0. Success is containment — attacker
+      text never reached a credentialed component as instruction — not "the model refused", which
+      is a property of a disposition rather than of a structure.
+    - Every component must beat a declared trivial baseline: miner vs rank-by-diff-size, reviewer
+      vs a regex over the forbidden-word list, angle vs always-pick-the-most-frequent-archetype,
+      copywriter vs the channel's release-note template filled. A model-based stage that cannot
+      is DELETED, not tuned.
+    - Metrics are reported per defect class, never aggregate: a reviewer that catches 100% of
+      buzzwords and 20% of subtly-false technical claims scores well in aggregate and is useless.
+    - The corpus is a versioned artifact with provenance per case (synthesised / observed /
+      from_retraction), the labeller, the date, and inter-rater agreement for multi-labeller
+      classes.
+    - Production failures become regression tests: every retraction writes a permanent case
+      carrying the gate verdict that wrongly passed it (retractions.gate_verdict_id). That is the
+      only mechanism by which the gate improves from having been wrong.
+    - Model calls in CI use recorded fixtures by default; a nightly job runs the generative suites
+      against live providers, because a suite that only ever sees fixtures eventually measures the
+      fixtures.
+
+    Deliberately NOT tested, and stated so an eval directory does not imply coverage it lacks:
+    whether a post lands well with developers (only directionally measurable, ADR-0015); whether
+    the voice is authentically the maintainer's (settled by a human calibration loop, ADR-0012);
+    and whether a platform's terms still permit what its profile claims (a human re-verification
+    on a 90-day clock, surfaced by `doctor`).
+
+  # M1 is the universal bootstrap - items 1.1-1.5, emitted by the template: build system, test
+  # framework, formatter+linter, CI matrix, version constant. Extras below therefore start at
+  # 1.6; numbering them from 1.4 collided with the template's own 1.4/1.5 in a first render. These
+  # are the EXTRA M1 items the plan phase added from RFC-0001: the installation-root ADR, the two
+  # verifications RFC-0001 declined to perform, and the two gates D6/D8 turned into release
+  # blockers. Mirrors ROADMAP.md Milestone 1.
+  milestone1_items:
+        - { text: "1.6 ADR recording D6 - .eadros-core/ as the installation root - and the concrete internal layout derived from it (RFC-0001 D6, closes O5)", signals: [adr] }
+        - "1.7 Verify the Node support dates underpinning D7 against the published release schedule (RFC-0001 D7)"
+        - "1.8 Run the FTS5 probe for node:sqlite on Node 22 and 24 and record the result against the D8 migration trigger (RFC-0001 D8)"
+        - { text: "1.9 Prebuild and cold-start gate - per matrix cell on a clean image, assert install resolves a prebuilt better-sqlite3 and never invokes a compiler; measure cold npx against the 60 s budget (RFC-0001 D8)", signals: ["severity:high"] }
+        - { text: "1.10 Non-invasive-install gate (ADR-0004) - install into a POPULATED fixture repo on a clean image and fail on any path outside the closed allowlist (.eadros-core/**, .claude/commands/eadros/**, a consented one-line .gitignore append) AND on any checksum change to a pre-existing file", signals: [security] }
+        - { text: "1.11 Clean-uninstall assertion (ADR-0004) - rm -rf .eadros-core/ plus the two allowlisted paths returns the fixture repo to its pre-install checksum set", signals: ["severity:high"] }
+
+  # NEGOTIATED ROADMAP - the plan phase output, mirroring ROADMAP.md. The two MUST agree: the
+  # renderer regenerates ROADMAP.md from this block at scaffold time, so a divergence here would
+  # silently overwrite the negotiated plan with the pre-negotiation import.
+  # Milestones 2-8 are the specification roadmap (.specs/docs-eadros/roadmap/MVP.md) shifted by +1,
+  # because EADOS reserves M1 for the bootstrap; each item carries its source number so the mapping
+  # is reversible by inspection. Milestone 9 is NEW, added by this phase: RFC-0001 and the
+  # install-cost NFR assert a cold npx run and set capabilities.packaging, but the imported roadmap
+  # had no milestone that ships the package.
+  # Signals, never tiers (#306, ADR-0023): the renderer resolves them through os/routing, so the
+  # route printed in ROADMAP.md is derived from the same policy rather than hand-copied.
+  milestones:
+    - number: 2
+      title: "Foundation"
+      goal: "A manifest, a store, and a pipeline that can hold state."
+      items:
+        - { text: "2.1 Intake interview and devrel.yaml manifest (spec M1.1)", signals: ["severity:medium"] }
+        - { text: "2.2 init / onboard / adopt commands (spec M1.2)", signals: ["severity:medium"] }
+        - { text: "2.3 SQLite store, schema and forward-only numbered migrations per RFC-0001 O3 (spec M1.3)", signals: ["severity:high"] }
+        - { text: "2.4 In-process event bus, persisted in the same transaction as the state change (spec M1.4)", signals: ["severity:high"] }
+        - { text: "2.5 Post state machine and transition ledger (spec M1.5)", signals: ["severity:high"] }
+        - { text: "2.6 Channel and voice profile loaders, including the 90-day staleness refusal (spec M1.6)", signals: ["severity:medium"] }
+        - { text: "2.7 Provider abstraction with tier routing (spec M1.7 - partial in the spec)", signals: [sets-pattern] }
+        - "2.8 config/ overlay - defaults.yaml, house-rules.md, scoring.yaml (spec M1.8 - not yet specified)"
+        - { text: "2.9 Store-module interface isolating the SQLite driver, so the node:sqlite swap is one file (RFC-0001 D8)", signals: [sets-pattern] }
+        - { text: "2.10 Error taxonomy and CLI exit-code mapping for the eleven refusal classes (RFC-0001 O4)", signals: ["severity:medium"] }
+        - { text: "2.11 Host command-adapter generation - the /eadros <name> surface generated per host from the canonical procedures, never hand-written (commands/README.md two-layer convention)", signals: [sets-pattern] }
+        - { text: "2.12 Per-channel target identity - which account or page a channel publishes to, with the tier resolved per target rather than per platform (LinkedIn personal profile is draft, approved company app is assisted)", signals: [security] }
+    - number: 3
+      title: "Wave 0 positioning"
+      goal: "The audit that gates distribution on the project being ready for it."
+      items:
+        - { text: "3.1 Deterministic repo checks - demo above the fold, install command, topics, description, licence (spec M2.1)", signals: ["severity:medium"] }
+        - { text: "3.2 Rubric-scored positioning review against positioning.comparables (spec M2.2)", signals: ["severity:medium"] }
+        - { text: "3.3 launch writes positioning.last_audit; campaigns gate on its score (spec M2.3)", signals: ["severity:medium"] }
+    - number: 4
+      title: "Mining and drafting"
+      goal: "Repository activity becomes ranked candidates, then drafts."
+      items:
+        - { text: "4.1 Deterministic scorer, weights in config/scoring.yaml - identical input yields identical output (spec M3.1)", signals: ["severity:high"] }
+        - { text: "4.2 Hard exclusions and dedup against the past-post index (spec M3.2)", signals: ["severity:high"] }
+        - { text: "4.3 Angle, Copywriter and Reviewer nodes with the hard iteration cap (spec M3.3)", signals: [sets-pattern] }
+        - { text: "4.4 Voice fingerprint application and the human calibration loop (spec M3.4)", signals: ["severity:high"] }
+        - { text: "4.5 Knowledge base - FTS5 plus an exhaustive cosine scan over the embeddings table (spec M3.5 - partial)", signals: ["severity:high"] }
+    - number: 5
+      title: "Gate and publish, auto tier"
+      goal: "The first post reaches a channel, through a human."
+      items:
+        - { text: "5.1 PrePublishGate - both passes, all eight stages; secrets and taint with no off switch (spec M4.1)", signals: [security] }
+        - { text: "5.2 Review queue, approve / reject, edit-required enforcement (spec M4.2)", signals: ["severity:high"] }
+        - { text: "5.3 Outbox, idempotency keys, reconciliation that asks the platform and never retries blind (spec M4.3)", signals: ["severity:high"] }
+        - { text: "5.4 Dev.to adapter, auto tier - the first adapter fixes the template every later one copies (spec M4.4)", signals: [sets-pattern] }
+        - { text: "5.5 pause / resume kill switch, with the held queue re-gated on resume (spec M4.5)", signals: [security] }
+        - { text: "5.6 retract runbook, branching on the channel api.delete capability (spec M4.6)", signals: ["severity:high"] }
+    - number: 6
+      title: "assisted and draft tiers"
+      goal: "The channels that cannot be fully automated, handled honestly."
+      items:
+        - { text: "6.1 Quota metering and refusal on exhaustion (spec M5.1)", signals: ["severity:medium"] }
+        - { text: "6.2 LinkedIn adapter, gated on app approval (spec M5.2)", signals: ["severity:medium"] }
+        - { text: "6.3 draft-tier hand-off - composer link, checklist, URL return, and no dispatch path in code (spec M5.3)", signals: [security] }
+        - { text: "6.4 Further channel profiles - Hashnode, Mastodon, Discord, GitHub Releases, X, Reddit (spec M5.4 - not yet specified)", signals: ["severity:medium"] }
+        - { text: "6.5 GitHub-native surface - PROPOSE topics, description and README badges as a printed diff the maintainer applies; never write a file the host project owns (ADR-0004; spec M5.5 - not yet specified)", signals: ["severity:medium"] }
+    - number: 7
+      title: "Measurement"
+      goal: "Know what happened, without claiming more than the data supports."
+      items:
+        - { text: "7.1 Daily append-only snapshot, gaps recorded as gaps - a missed day is lost permanently (spec M6.1)", signals: ["severity:high"] }
+        - { text: "7.2 Owned redirect and UTM tagging (spec M6.2)", signals: ["severity:medium"] }
+        - { text: "7.3 Pre/post lift against a control window, reported as directional (spec M6.3)", signals: ["severity:medium"] }
+        - { text: "7.4 digest and audit - spend per stage, gate false-positive rate, human-gate decay (spec M6.4)", signals: ["severity:medium"] }
+    - number: 8
+      title: "Verification harness"
+      goal: "The claims above become checkable."
+      items:
+        - { text: "8.1 eval runner - per-class scoring, variance, baselines (spec M7.1)", signals: ["severity:high"] }
+        - { text: "8.2 Miner golden set with its labelling protocol and inter-rater agreement (spec M7.2)", signals: ["severity:high"] }
+        - { text: "8.3 Reviewer corpus, eight defect classes, gated per class (spec M7.3)", signals: ["severity:high"] }
+        - { text: "8.4 Adversarial corpus - injection containment and leak recall, both hard-gated at 1.0 (spec M7.4)", signals: [security] }
+        - { text: "8.5 Channel contracts and formatter snapshots (spec M7.5)", signals: ["severity:medium"] }
+        - { text: "8.6 Cost regression suite (spec M7.6)", signals: ["severity:medium"] }
+        - { text: "8.7 State machine property tests - the six invariants the schema cannot express (spec M7.7)", signals: ["severity:high"] }
+    - number: 9
+      title: "Release and distribution"
+      goal: "The tool is actually installable by the one command its install-cost requirement names."
+      items:
+        - { text: "9.1 Dual ESM/CJS package with an explicit export map (RFC-0001 D7)", signals: ["severity:medium"] }
+        - "9.2 version.ts and package.json version lockstep, asserted by the consistency lint (RFC-0001 D7)"
+        - { text: "9.3 Release workflow - tag, changelog, and the agent-drafts / human-publishes boundary (RFC-0001)", signals: ["severity:medium"] }
+        - { text: "9.4 Published-artifact acceptance - install the packed tarball on a clean image per matrix cell and re-run the 1.9 prebuild and cold-start assertions against the real package (RFC-0001 D8)", signals: ["severity:high"] }
+
+# Interview provenance (#169) — recorded AS each phase settled its answers.
+# One entry per answer-bearing top-level key. Where a section mixed sources, the tag names the
+# decisive one and the section's own comment block states the split.
+interview:
+  questionnaire_version: 1
+  provenance:
+    domain:     defaulted   # `software` assumed (questionnaire default), confirmed by the maintainer
+    identity:   imported    # from .specs/ + git remote; project_series asked
+    ownership:  imported    # from git remote, git config and LICENSE
+    language:   asked       # group_path asked (no repo evidence); lang imported; the rest from the profile
+    toolchain:  defaulted   # profiles/typescript.yaml, unmodified
+    ci:         defaulted   # profiles/typescript.yaml, unmodified
+    governance: asked       # posture asked; scopes derived from COMPONENTS.md; the rest default
+    i18n:       defaulted   # en, no translation targets
+    announce:   defaulted   # off (Q4.8 default)
+    spec:       imported    # Q5.0 path (a): .specs/19_spec_eadros_devrel_os_summary.md + docs-eadros/

@@ -1,0 +1,49 @@
+# Channel profile — DEV Community (dev.to). Schema: ./_schema.md
+# The reference `auto` tier: a documented write API and no prohibition on automated posting.
+channel:        devto
+display_name:   "DEV Community (dev.to)"
+tier:           auto
+tier_reason:    "Documented article write API with a per-user key; automated publishing is permitted."
+
+policy:
+  automation_permitted: true
+  self_promotion:       none
+  ban_scope:            account
+  terms_url:            "https://developer.forem.com/api"
+  verified_on:          "2026-07-28"
+  notes:                "Forem-based; the same profile shape applies to other Forem instances."
+
+api:
+  write:               true
+  auth:                api_key
+  requires_app_review: false
+  token_lifetime_days: null
+  endpoint_hint:       "Forem articles API — create and update an article"
+  delete:              edit-only        # articles can be unpublished/edited; hard delete is manual,
+                                        # so the retract runbook unpublishes rather than removes
+
+limits:
+  max_chars:      null
+  markdown:       full
+  code_blocks:    fenced
+  images:         url
+  links:          { count: null, penalised: false }
+  tags:           { max: 4, style: lowercase-nospace }
+  rate:           { unit: day, quota: 10 }
+
+cadence:
+  max_per_week:   1
+  min_gap_hours:  72
+
+format:
+  front_matter:   true
+  canonical_url:  supported     # ALWAYS set it to the project's own docs page: syndicating without
+                                # a canonical lets dev.to outrank the source you are trying to grow
+  series:         supported
+  thread:         unsupported
+
+attribution:
+  utm:                supported
+  referrer_preserved: true      # one of the few channels where referrer attribution survives
+
+handoff: {}                     # not applicable at tier: auto

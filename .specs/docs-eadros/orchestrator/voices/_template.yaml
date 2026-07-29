@@ -1,0 +1,56 @@
+# Voice profile TEMPLATE. Copy to voices/<slug>.yaml. Schema: ./_schema.md
+#
+# A profile authored from ADJECTIVES is worse than no profile — it looks configured while
+# selecting nothing. Fill this from REAL WRITING SAMPLES (interview Q3.1), then correct it with
+# the calibration loop. Fields you could not derive from a sample should stay at their defaults
+# and be recorded as `defaulted`, not quietly invented.
+
+voice:          ""                    # profile key; must match the filename
+display_name:   ""
+person:         person                # person ("I built…") | project ("v2.0 ships…")
+byline:         ""
+stance:         ""                    # one line: the posture this writing takes toward the reader
+
+fingerprint:                          # every field mechanically checkable — that is the point
+  mean_sentence_words:  { target: 18, tolerance: 6 }
+  sentence_variance:    high          # low | medium | high
+                                      # uniform sentence length is the loudest generated-prose
+                                      # tell; `high` is the usual human value
+  paragraph_max_sentences: 4
+  jargon_density:       medium        # low | medium | high — assumed reader knowledge
+  hedging:              low           # low | medium | high
+  code_to_prose_ratio:  { min: 0.0 }
+  formatting:
+    bullets:    sparing               # never | sparing | frequent
+    headers:    true
+    em_dash:    false
+    emoji:      none                  # none | sparing | frequent
+  opening_move: []                    # claim | problem | number | story | question
+                                      # record what the samples ACTUALLY do, not what reads well
+
+forbidden:
+  words:         []                   # the easy half
+  constructions: []                   # the half that matters — populated mostly by the
+                                      # calibration loop, from what the maintainer DELETES
+
+archetypes:                           # Q3.3 consent + monthly ceilings
+  postmortem:  { enabled: false, max_per_month: 0 }   # ask — never default on
+  opinion:     { enabled: false, max_per_month: 0 }   # ask — never default on
+  subtraction: { enabled: true,  max_per_month: 2 }
+  tradeoff:    { enabled: true,  max_per_month: 2 }
+  benchmark:   { enabled: true,  max_per_month: 2, requires_evidence: true }
+  buildlog:    { enabled: true,  max_per_month: 4 }
+  howto:       { enabled: true,  max_per_month: 2 }
+  release:     { enabled: true,  max_per_month: 4 }
+
+claim_discipline: strict              # strict | relaxed — relaxed requires an ADR
+
+disclosure:
+  mode:        standing_line
+  text:        ""                     # the maintainer's own phrasing; a generic line reads
+                                      # worse than no line at all
+  per_channel: true
+
+calibration: []                       # [{date, source_ref, rounds, accepted}]
+                                      # empty is the honest state for a fresh profile — it has
+                                      # never been corrected against a real maintainer's edits
