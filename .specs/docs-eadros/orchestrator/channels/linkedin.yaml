@@ -1,0 +1,60 @@
+# Channel profile — LinkedIn. Schema: ./_schema.md
+# The reference `assisted` tier: a write API exists, but access is gated on app review and the
+# credentials are short-lived. Posting to a PERSONAL profile is the restricted case; verify the
+# current product/scope availability before trusting this profile.
+channel:        linkedin
+display_name:   "LinkedIn"
+tier:           assisted
+tier_reason:    "Write access requires an approved app and a member-authorised scope; credentials expire and do not always refresh silently."
+
+policy:
+  automation_permitted: conditional
+  self_promotion:       discouraged   # the feed suppresses link-out posts; the copywriter should
+                                      # lead with the narrative and place the link in a comment
+  ban_scope:            account
+  terms_url:            "https://learn.microsoft.com/linkedin/"
+  verified_on:          "2026-07-28"
+  notes: >-
+    Programmatic posting depends on which developer product the app is approved for, and the
+    approval bar has moved more than once. Treat an UNAPPROVED app as a roadmap item, never as a
+    live channel: recording it as live is how a weekly cadence silently drops half its output.
+
+api:
+  write:               conditional
+  auth:                oauth2
+  requires_app_review: true
+  token_lifetime_days: 60              # short by design — /eadros doctor must warn ahead of expiry,
+                                       # because a token that dies mid-campaign fails silently
+  endpoint_hint:       "member share/post creation under an approved developer product"
+  delete:              supported
+
+limits:
+  max_chars:      3000
+  markdown:       none                 # plain text only: the copywriter must not emit fenced code;
+                                       # code goes in an image or is described in prose
+  code_blocks:    image-only
+  images:         upload
+  links:          { count: 1, penalised: true }
+  tags:           { max: 3, style: hashtag-camel }
+  rate:           { unit: month, quota: null }   # set from the approved product's quota
+
+cadence:
+  max_per_week:   2
+  min_gap_hours:  48
+
+format:
+  front_matter:   false
+  canonical_url:  unsupported
+  series:         unsupported
+  thread:         unsupported
+
+attribution:
+  utm:                supported
+  referrer_preserved: false            # in-app browser strips or rewrites the referrer — per-post
+                                       # attribution needs an owned redirect, and the analytics
+                                       # engine reports lift, not causation (ADR-0015)
+
+handoff:                               # used when the app is unapproved: the channel degrades to
+  method:         clipboard            # draft rather than disappearing, so the content still ships
+  url_template:   ""
+  returns_url:    true

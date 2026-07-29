@@ -1,0 +1,190 @@
+# devrel.yaml — the single source of truth for one repository's DevRel program.
+#
+# Copy this skeleton to `orchestrator/devrel.yaml`, fill it from the intake interview merged
+# with the resolved channel and voice profiles, and confirm it with the maintainer BEFORE
+# anything runs. Sibling of the EADOS `project.yaml`: same schema_version / manifest_rev /
+# provenance conventions, same "never operate from an unconfirmed manifest" rule.
+
+schema_version: 1
+# manifest_rev is an OPTIMISTIC-CONCURRENCY counter: bump it by 1 on every write-back. The
+# phase runner prints the rev it read and refuses a write when another session moved it, so
+# parallel edits fail loud instead of silently losing one. Absent == rev 0.
+manifest_rev: 0
+
+# --- Upstream link -----------------------------------------------------------------------
+# When the repository is EADOS-governed, this records what was imported rather than asked.
+# EADOS Q4.8 (announce.channels[]) is the seed of the channels: block below; EADROS deepens
+# that one question, it does not re-ask it.
+upstream:
+  eados_manifest: ""          # e.g. orchestrator/project.yaml; "" when EADROS runs standalone
+  imported_keys: []           # e.g. [identity, ownership, i18n, announce]
+
+program:
+  repo:            ""         # owner/name, e.g. danielPoloWork/pgs-eaao
+  tagline:         ""         # One line: what it does. Imported from EADOS identity when present.
+  audience:        ""         # The reader with the problem — "backend engineers evaluating rate limiters"
+  goal:            adoption   # adoption | contribution | credibility | hiring
+  visibility:      public     # public | private | private-now-public-later
+  timezone:        ""         # IANA tz, e.g. Europe/Rome
+
+# --- Wave 0 (positioning) — captured at Phase 1, audited by /eadros launch -----------------
+positioning:
+  category:        ""         # the reader's existing vocabulary, not your coinage
+  keywords:        []         # high-intent search terms
+  comparables:     []         # what a reader compares this to; in the manifest because lists rot
+  differentiator:  ""         # one sentence a competitor could NOT also claim
+  proof_assets:    []         # [{kind: benchmark|demo|diff|adr, ref: ""}]
+  demo_ref:        ""         # 60-90s GIF/video above the fold; "" -> program roadmap item 1
+  last_audit:                 # written by /eadros launch
+    score:         null       # 0-100 against the rubric
+    at:            ""
+    blocking:      []         # findings that gate campaigns with a wave0_score pre-condition
+
+# --- Channels ------------------------------------------------------------------------------
+# tier is DERIVED from channels/<name>.yaml — never a maintainer choice (ADR-0011). An upward
+# override requires a recorded ADR carrying the maintainer's explicit acceptance of the risk.
+channels: []
+#  - name:            devto
+#    tier:            auto            # auto | assisted | draft   (derived; stated at confirmation)
+#    tier_source:     channels/devto.yaml
+#    handle:          "@d4np"
+#    credential_ref:  "keychain:eadros/devto"   # LOCATION, never the value
+#    owner:           "Daniel Polo"
+#    scope:           "articles:write"
+#    expires_at:      ""              # "" = non-expiring; /eadros doctor warns before expiry
+#    cadence:         { max_per_week: 1, min_gap_hours: 72 }
+#    quota:           { unit: month, limit: null, used: 0 }
+#    locales:         [en]
+#    app_status:      approved        # approved | pending | n/a — pending is a ROADMAP ITEM, not a channel
+#    enabled:         true
+
+schedule:
+  window:          "08:00-20:00"
+  days:            weekdays
+  # No publish is dispatched outside this window; the Planner queues instead.
+
+locales:
+  canonical:       en
+  targets:         []         # [{code: it, name: Italian, mode: translated}]  mode: translated | authored
+
+# --- Voice ---------------------------------------------------------------------------------
+# Resolved from voices/<slug>.yaml, then overridden by what Phase 3 extracted and calibrated.
+# Values marked inferred_from_sample in the interview block were EXTRACTED, not stated — they
+# must have been shown back to the maintainer before adoption.
+voice:
+  profile:         ""         # voices/<slug>.yaml
+  person:          person     # person | project
+  byline:          ""
+  fingerprint:     {}         # extracted at Q3.1; see voices/_schema.md for the field set
+  samples:         []         # [{kind: post|readme|adr|commit, ref: ""}] — provenance for the fingerprint
+  archetypes:                 # Q3.3 consent + monthly ceilings. postmortem/opinion default OFF.
+    postmortem:    { enabled: false, max_per_month: 0 }
+    subtraction:   { enabled: true,  max_per_month: 2 }
+    tradeoff:      { enabled: true,  max_per_month: 2 }
+    benchmark:     { enabled: true,  max_per_month: 2, requires_evidence: true }
+    buildlog:      { enabled: true,  max_per_month: 4 }
+    howto:         { enabled: true,  max_per_month: 2 }
+    opinion:       { enabled: false, max_per_month: 0 }
+    release:       { enabled: true,  max_per_month: 4 }
+  forbidden:
+    words:         []         # seeded from the profile; maintainer adds their own
+    constructions: []         # the higher-value half: opener shapes, antithesis, emoji headers
+  claim_discipline: strict    # strict = every claim carries a resolvable source_ref; snippets
+                              # extracted verbatim at a SHA, never model-generated
+  disclosure:      { mode: standing_line, text: "", per_channel: true }
+  calibration:     []         # [{date, source_ref, rounds, accepted}] — Phase 3's closing loop
+
+# --- Safety --------------------------------------------------------------------------------
+# Enforced by the deterministic PrePublishGate, which runs BEFORE any model sees content and
+# again BEFORE dispatch. Secret scanning is unconditional and has no off switch.
+safety:
+  path_allowlist:  []         # e.g. [src/**, docs/**]; a private repo starts deny-all
+  deny:            []         # outranks the allowlist
+  deny_terms:      []         # customer names, internal hosts, unreleased feature names
+  max_diff_lines:  30
+  embargo:
+    unmerged:            block
+    min_commit_age_hours: 24  # lets a bad commit be reverted before it is famous
+    private_repo:        block
+
+# --- Governance ----------------------------------------------------------------------------
+governance:
+  posture:         standard   # standard | enterprise (no auto tier, mandatory disclosure, 2nd approver)
+  approvers:       []         # [{name, surface, scope}]
+  review_surface:  cli        # cli | dashboard | discord | telegram
+  approval_mode:   edit-required   # edit-required | as-is-permitted
+                              # edit-required: approval is valid only if the final text differs
+                              # from the draft, or --as-is is passed AND recorded in the audit trail
+  kill_switch_owner: ""       # the human who can run /eadros pause, and where to reach them
+  house_rules:     ""         # org overlay copied from config/house-rules.md
+  paused:          false      # set by /eadros pause; blocks every dispatch
+
+# --- Budget --------------------------------------------------------------------------------
+# Numeric ceilings, never adjectives — gates, not promises. Same discipline as an EADOS hard
+# NFR budget: a ceiling with no number fails the audit.
+budget:
+  currency:               EUR
+  cost_per_week:          null   # hard ceiling across all model calls
+  max_campaigns_per_run:  5      # the deterministic miner ranks; only the top-K reach a model
+  max_reviewer_iterations: 2     # an unbounded critique loop is this architecture's cost bomb
+  on_exceed:              pause  # pause | warn
+  model_routing:                 # which model tier serves which stage (ADR-0013)
+    triage:    cheap
+    drafting:  mid
+    review:    strong
+  prompt_cache:           true   # the KB context is stable across runs; caching it is the
+                                 # single largest available saving
+
+# --- Cadence & campaigns --------------------------------------------------------------------
+cadence:
+  weekly:          { substantive: 1, opportunistic: 1 }
+
+campaigns: []
+#  - id:            show-hn-v1
+#    trigger:       manual
+#    channels:      [hackernews]
+#    archetype:     tradeoff
+#    precondition:  "positioning.last_audit.score >= 80 and positioning.demo_ref != ''"
+#    # a campaign with no precondition is how a project spends its one launch too early
+
+success:
+  primary_metric:  ""         # one metric from SUCCESS_METRICS.md
+  target:          null       # a number; a KPI without a target is a poster
+  horizon_days:    90
+  attribution:     directional # never `causal` — see ADR-0015
+
+# --- Pipeline state --------------------------------------------------------------------------
+# Per-campaign state lives in the store; this block holds program-level state only.
+pipeline_state:
+  last_mine_at:    ""
+  last_metrics_snapshot_at: ""   # the daily GitHub Traffic snapshot; the API keeps only 14 days,
+                                 # so a missed window is data lost permanently
+  open_reviews:    0
+
+# --- Interview provenance ---------------------------------------------------------------------
+# Filled DURING the interview, never retrospectively: for EVERY top-level answer key above,
+# how it got its value.
+#   asked                 — the question was posed and the maintainer answered.
+#   defaulted             — assumed from the questionnaire default and echoed back at confirmation.
+#   imported              — carried in from an existing artifact (the EADOS manifest, a past program).
+#   inferred_from_sample  — EXTRACTED from the maintainer's own writing (Q3.1). Must have been
+#                           shown back in plain language before adoption; an inferred value the
+#                           maintainer never saw is indistinguishable from a guess.
+# validate_manifest rejects a wrong value, a dangling key, and an incomplete block — one entry
+# per answer-bearing section present, plus questionnaire_version.
+#
+# interview:
+#   questionnaire_version: 1
+#   provenance:
+#     program:      asked
+#     positioning:  asked
+#     channels:     imported        # from EADOS announce.channels[] (Q4.8)
+#     schedule:     defaulted
+#     locales:      imported
+#     voice:        inferred_from_sample
+#     safety:       asked
+#     governance:   asked
+#     budget:       asked
+#     cadence:      defaulted
+#     campaigns:    asked
+#     success:      asked

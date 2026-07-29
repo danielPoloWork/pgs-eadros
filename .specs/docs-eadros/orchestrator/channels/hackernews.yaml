@@ -1,0 +1,70 @@
+# Channel profile — Hacker News. Schema: ./_schema.md
+# The reference `draft` tier, and the profile that proves the tier model earns its keep: there is
+# no lawful automation path here, and no amount of engineering changes that.
+channel:        hackernews
+display_name:   "Hacker News (Show HN)"
+tier:           draft
+tier_reason:    "No write API exists, and automated submission violates site norms. A human submits; EADROS prepares."
+
+policy:
+  automation_permitted: false
+  self_promotion:       discouraged
+  ban_scope:            domain          # THE critical field: penalties attach to the DOMAIN, not
+                                        # just the account. A ban outlives the account that earned
+                                        # it and cannot be undone by making a new one — which is
+                                        # why an upward tier override here requires a recorded ADR
+  terms_url:            "https://news.ycombinator.com/newsguidelines.html"
+  verified_on:          "2026-07-28"
+  notes: >-
+    The public API is read-only; there is no supported submission endpoint. Show HN also rewards
+    timing, a working demo and an author present in the thread for the first hours — none of which
+    a scheduler can supply. The correct design is to make the human's submission better, not to
+    replace it.
+
+api:
+  write:               false
+  auth:                none
+  requires_app_review: false
+  token_lifetime_days: null
+  endpoint_hint:       "read-only API only; no submission endpoint"
+  delete:              unsupported      # a submission cannot be withdrawn — the retract runbook
+                                        # degrades to a correction comment, and the pre-publish
+                                        # gate is therefore strictest on this channel
+
+limits:
+  max_chars:      80                    # title
+  markdown:       none
+  code_blocks:    unsupported
+  images:         unsupported
+  links:          { count: 1, penalised: false }
+  tags:           { max: 0, style: none }
+  rate:           { unit: month, quota: 1 }   # a program-level ceiling, not a platform limit:
+                                              # repeated submissions of the same project are the
+                                              # fastest way to spend the domain's credibility
+
+cadence:
+  max_per_week:   0                     # never scheduled; only fires from an explicit campaign
+  min_gap_hours:  0
+
+format:
+  front_matter:   false
+  canonical_url:  unsupported
+  series:         unsupported
+  thread:         unsupported
+
+attribution:
+  utm:                unsupported       # a UTM-tagged Show HN link reads as marketing and is
+                                        # penalised by the audience itself — submit the clean URL
+  referrer_preserved: true
+
+handoff:
+  method:         prefilled_composer
+  url_template:   "https://news.ycombinator.com/submitlink?u={url}&t={title}"
+  returns_url:    true                  # the human pastes the item URL back so the metrics
+                                        # collector can still track it
+  checklist:                            # what EADROS prepares instead of publishing
+    - "title under 80 chars, no marketing verbs, no version number unless it is the point"
+    - "the demo works, right now, on a cold machine"
+    - "the README's first screen answers what it is and who it is for"
+    - "the author is free for the next 3 hours to answer the thread"
+    - "the Wave 0 audit scored >= 80 (campaign precondition)"
