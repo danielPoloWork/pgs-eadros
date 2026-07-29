@@ -35,7 +35,9 @@ presence map → goal menu → a legal route into `onboard`.
    standard to review it against.
 
 4. **Write the manifest skeleton.** Copy
-   [`devrel.yaml.template`](../orchestrator/devrel.yaml.template) to `orchestrator/devrel.yaml`
+   [`devrel.yaml.template`](../orchestrator/devrel.yaml.template) to **`.eadros-core/devrel.yaml`**
+   — inside the installation root, never at the host project's root, which would create an
+   `orchestrator/` directory in a repository EADROS does not own (ADR-0004) —
    and fill `schema_version`, `upstream`, `program`, and `positioning`. Leave `channels`, `voice`,
    `safety`, `governance` and `budget` to `/eadros onboard` — writing a plausible default into a
    safety field the maintainer never saw is exactly the failure this manifest's provenance block

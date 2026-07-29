@@ -15,7 +15,7 @@
 meta:
   version: 1
   conducted_in: maintainer_language     # answers transcribed to English in devrel.yaml
-  output: orchestrator/devrel.yaml
+  output: .eadros-core/devrel.yaml    # inside the installation root (ADR-0004); never the host root
   # Record asked|defaulted|imported|inferred_from_sample per top-level answer key in the
   # manifest's interview: block AS the interview proceeds (never retrospectively); copy
   # `version` above into interview.questionnaire_version.

@@ -44,7 +44,8 @@ The thinnest slice that compiles, tests, and ships under the full quality bar.
 - [ ] 1.7 Verify the Node support dates underpinning D7 against the published release schedule (RFC-0001 D7)
 - [ ] 1.8 Run the FTS5 probe for node:sqlite on Node 22 and 24 and record the result against the D8 migration trigger (RFC-0001 D8)
 - [ ] 1.9 Prebuild and cold-start gate - per matrix cell on a clean image, assert install resolves a prebuilt better-sqlite3 and never invokes a compiler; measure cold npx against the 60 s budget (RFC-0001 D8) — route: standard / high (severity:high)
-- [ ] 1.10 Post-install containment assertion - every installed asset under .eadros-core/ (RFC-0001 D6) — route: standard / medium (severity:medium)
+- [ ] 1.10 Non-invasive-install gate (ADR-0004) - install into a POPULATED fixture repo on a clean image and fail on any path outside the closed allowlist (.eadros-core/**, .claude/commands/eadros/**, a consented one-line .gitignore append) AND on any checksum change to a pre-existing file — route: frontier-reasoning / extra (security)
+- [ ] 1.11 Clean-uninstall assertion (ADR-0004) - rm -rf .eadros-core/ plus the two allowlisted paths returns the fixture repo to its pre-install checksum set — route: standard / high (severity:high)
 
 
 ---
@@ -115,7 +116,7 @@ The channels that cannot be fully automated, handled honestly.
 - [ ] 6.2 LinkedIn adapter, gated on app approval (spec M5.2) — route: standard / medium (severity:medium)
 - [ ] 6.3 draft-tier hand-off - composer link, checklist, URL return, and no dispatch path in code (spec M5.3) — route: frontier-reasoning / extra (security)
 - [ ] 6.4 Further channel profiles - Hashnode, Mastodon, Discord, GitHub Releases, X, Reddit (spec M5.4 - not yet specified) — route: standard / medium (severity:medium)
-- [ ] 6.5 GitHub-native surface - topics, description, README badges (spec M5.5 - not yet specified)
+- [ ] 6.5 GitHub-native surface - PROPOSE topics, description and README badges as a printed diff the maintainer applies; never write a file the host project owns (ADR-0004; spec M5.5 - not yet specified) — route: standard / medium (severity:medium)
 
 
 ---

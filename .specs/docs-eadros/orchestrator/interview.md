@@ -270,7 +270,8 @@ What may be published, who authorizes it, and what it is allowed to cost.
 ## Closing the interview
 
 1. Merge the answers with the resolved channel and voice profiles into
-   `orchestrator/devrel.yaml`, and verify the `interview:` provenance block you filled as you went
+   `.eadros-core/devrel.yaml` (inside the installation root, never the host project's root —
+   ADR-0004), and verify the `interview:` provenance block you filled as you went
    is complete — one entry per top-level answer key, `questionnaire_version` set.
 2. **Present the manifest**, pointing the maintainer at every entry marked **`defaulted`** and
    every entry marked **`inferred_from_sample`**. Those are the two classes of value you assumed

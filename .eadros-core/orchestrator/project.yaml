@@ -230,7 +230,9 @@ spec:
     - "`auto`-tier publish success: >= 99% excluding platform outages — outbox outcomes."
     - "Metrics snapshot gap rate: <= 1% of days — `post_metrics.is_gap`."
     - "Install cost: 0 services; a cold `npx` run in <= 60 s — CI on a clean image."
-    - "Installation containment: every asset the product installs lives under `.eadros-core/`, the installation root; nothing is written outside it except the maintainer's own manifest. Mechanically checkable by asserting the post-install file set on a clean image."
+    - "Installation containment: every asset the product installs lives under `.eadros-core/`, the installation root, plus a CLOSED allowlist of paths external systems fix - `.claude/commands/eadros/**` (create-only) and a consented one-line `.gitignore` append (ADR-0004). Measured by the item-1.10 gate: install into a populated fixture repository on a clean image and fail on any path outside the allowlist."
+    - "Installation non-invasiveness: ZERO pre-existing files modified - not README.md, AGENTS.md, CLAUDE.md, GEMINI.md, ROADMAP.md, CHANGELOG.md, SECURITY.md, package.json, nor any file the host project already had; the one exception is the consented `.gitignore` append, which appends and never rewrites. Measured by checksumming the fixture repository before and after install (ADR-0004)."
+    - "Clean uninstallation: removing `.eadros-core/` and the two allowlisted paths returns the host repository to its pre-install checksum set - a product that cannot be cleanly removed was never contained (ADR-0004)."
     - "Channel profile freshness: a profile older than 90 days blocks onboarding, because a compliance rule that cannot be re-verified is silently wrong within a year."
     - "Observability: every event persisted with `correlation_id` and `causation_id`, so one query returns the complete account of how one CI failure became three posts."
 
@@ -370,7 +372,8 @@ spec:
         - "1.7 Verify the Node support dates underpinning D7 against the published release schedule (RFC-0001 D7)"
         - "1.8 Run the FTS5 probe for node:sqlite on Node 22 and 24 and record the result against the D8 migration trigger (RFC-0001 D8)"
         - { text: "1.9 Prebuild and cold-start gate - per matrix cell on a clean image, assert install resolves a prebuilt better-sqlite3 and never invokes a compiler; measure cold npx against the 60 s budget (RFC-0001 D8)", signals: ["severity:high"] }
-        - { text: "1.10 Post-install containment assertion - every installed asset under .eadros-core/ (RFC-0001 D6)", signals: ["severity:medium"] }
+        - { text: "1.10 Non-invasive-install gate (ADR-0004) - install into a POPULATED fixture repo on a clean image and fail on any path outside the closed allowlist (.eadros-core/**, .claude/commands/eadros/**, a consented one-line .gitignore append) AND on any checksum change to a pre-existing file", signals: [security] }
+        - { text: "1.11 Clean-uninstall assertion (ADR-0004) - rm -rf .eadros-core/ plus the two allowlisted paths returns the fixture repo to its pre-install checksum set", signals: ["severity:high"] }
 
   # NEGOTIATED ROADMAP - the plan phase output, mirroring ROADMAP.md. The two MUST agree: the
   # renderer regenerates ROADMAP.md from this block at scaffold time, so a divergence here would
@@ -433,7 +436,7 @@ spec:
         - { text: "6.2 LinkedIn adapter, gated on app approval (spec M5.2)", signals: ["severity:medium"] }
         - { text: "6.3 draft-tier hand-off - composer link, checklist, URL return, and no dispatch path in code (spec M5.3)", signals: [security] }
         - { text: "6.4 Further channel profiles - Hashnode, Mastodon, Discord, GitHub Releases, X, Reddit (spec M5.4 - not yet specified)", signals: ["severity:medium"] }
-        - "6.5 GitHub-native surface - topics, description, README badges (spec M5.5 - not yet specified)"
+        - { text: "6.5 GitHub-native surface - PROPOSE topics, description and README badges as a printed diff the maintainer applies; never write a file the host project owns (ADR-0004; spec M5.5 - not yet specified)", signals: ["severity:medium"] }
     - number: 7
       title: "Measurement"
       goal: "Know what happened, without claiming more than the data supports."
