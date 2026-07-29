@@ -6,7 +6,7 @@ All notable changes to `pgs-eadros` are documented here, following
 
 Every PR that introduces a user-visible change adds a line to `[Unreleased]` in the same
 PR. A release PR moves the `[Unreleased]` entries into a new per-version file under
-`docs/changelog/v<MAJOR>/v<X.Y.Z>.md` and adds an index row below.
+`.eadros-core/docs/changelog/v<MAJOR>/v<X.Y.Z>.md` and adds an index row below.
 
 ## [Unreleased]
 

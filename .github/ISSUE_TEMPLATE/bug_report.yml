@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Thanks for the report. A maintainer **reproduces and root-causes** before a
-        `docs/bugs/` record is opened, so a minimal reproduction is the most useful thing you
+        `.eadros-core/docs/bugs/` record is opened, so a minimal reproduction is the most useful thing you
         can provide. **Security issues do not go here** — see [`SECURITY.md`](../../SECURITY.md).
   - type: input
     id: version

@@ -54,13 +54,13 @@ match that language, but anything that lands on disk or in Git is English-only.
 `pgs-eadros` is part of the **Production-Grade Systems** series and
 is **Governed agent pipeline that turns real engineering activity into human-approved developer-relations posts.**.
 
-The full specification is in [`docs/specs/01_spec_eadros.md`](docs/specs/01_spec_eadros.md).
+The full specification is in [`.eadros-core/docs/specs/01_spec_eadros.md`](.eadros-core/docs/specs/01_spec_eadros.md).
 The current plan and progress live in [`ROADMAP.md`](ROADMAP.md).
 
 This project is held to the **enterprise governance posture** (`governance.posture: enterprise`,
 ADR-0015): a raised compliance bar orthogonal to the domain — mandatory ADRs for security-relevant
 decisions, stricter review, and a maintained compliance-docs surface. The raised-bar clauses are in
-§7 and §10; the compliance index is [`docs/compliance/README.md`](docs/compliance/README.md).
+§7 and §10; the compliance index is [`.eadros-core/docs/compliance/README.md`](.eadros-core/docs/compliance/README.md).
 
 ## 4. Repository Layout
 
@@ -72,20 +72,36 @@ decisions, stricter review, and a maintained compliance-docs surface. The raised
 ├── README.md                       # human-facing project landing page
 ├── ROADMAP.md                      # numbered checkbox roadmap, updated as work completes
 ├── LICENSE
-├── src/                            # all source code lives here — see §5
-│   ├── main/typescript/dev/d4np/eadros/
-│   ├── test/typescript/dev/d4np/eadros/
-│   └── bench/typescript/dev/d4np/eadros/    # where applicable
-├── docs/
-│   ├── adr/                        # Architecture Decision Records
-│   ├── patterns/                   # design-patterns catalogue + taxonomy
-│   ├── specs/                      # functional/technical specifications
-│   ├── workflow/                   # git, documentation, release & maintenance conventions
-│   ├── journal/                    # dated session checkpoints
-│   └── bugs/                       # in-repo bug ledger
-├── tools/consistency_lint.py       # agent-runnable cross-artifact congruence checker
-└── .github/                        # CI + release workflows, PR/issue templates, CODEOWNERS, Dependabot
+├── CHANGELOG.md · SECURITY.md
+├── package.json · tsconfig.json    # npm requires the manifest at the repository root
+├── .github/                        # CI + release workflows, PR/issue templates, CODEOWNERS, Dependabot
+├── .claude/                        # host command adapters, read from this fixed path
+└── .eadros-core/                   # THE PROJECT — one vendorable directory (ADR-0003)
+    ├── src/                        # all source code lives here — see §5
+    │   ├── main/typescript/dev/d4np/eadros/
+    │   ├── test/typescript/dev/d4np/eadros/
+    │   └── bench/typescript/dev/d4np/eadros/    # where applicable
+    ├── docs/
+    │   ├── adr/                    # Architecture Decision Records
+    │   ├── rfc/                    # design RFCs
+    │   ├── patterns/               # design-patterns catalogue + taxonomy
+    │   ├── specs/                  # functional/technical specifications
+    │   ├── workflow/               # git, documentation, release & maintenance conventions
+    │   ├── security/ · compliance/ # threat model; the enterprise-posture compliance index
+    │   ├── journal/                # dated session checkpoints
+    │   └── bugs/                   # in-repo bug ledger
+    └── tools/consistency_lint.py   # agent-runnable cross-artifact congruence checker
 ```
+
+**Why the nesting** ([ADR-0003](.eadros-core/docs/adr/0003-consolidate-the-project-tree-under-eadros-core.md)):
+`.eadros-core/` is the installation root RFC-0001 D6 commits to — one directory to install,
+upgrade, inspect and remove. Consolidating the project tree into it makes the repository
+demonstrate that property instead of contradicting it. What remains above it is there because an
+external system requires it: GitHub executes workflows only from `.github/` at the repository
+root, npm resolves `package.json` only from the root, the host reads `.claude/commands/` from a
+fixed path, and GitHub surfaces `README.md` and `LICENSE` from the root. **This repository
+therefore does not have the shape EADOS generates by default** — one level of nesting deeper —
+and that divergence is deliberate and recorded, not drift.
 
 ## 5. Source Tree & Cross-Language Layout
 
@@ -93,9 +109,9 @@ All code lives under a **Maven-style cross-language source tree** so that siblin
 in any language share the same shape:
 
 ```text
-src/main/typescript/dev/d4np/eadros/    # production sources
-src/test/typescript/dev/d4np/eadros/    # test sources
-src/bench/typescript/dev/d4np/eadros/   # benchmarks (where applicable)
+.eadros-core/src/main/typescript/dev/d4np/eadros/    # production sources
+.eadros-core/src/test/typescript/dev/d4np/eadros/    # test sources
+.eadros-core/src/bench/typescript/dev/d4np/eadros/   # benchmarks (where applicable)
 ```
 
 For this repository:
@@ -106,7 +122,7 @@ For this repository:
 
 Subdivision inside `eadros/` is by **component**, not by file type. **This layout
 is normative.** Do not place code at the repository root or in any other shape without
-first superseding [ADR-0002](docs/adr/0002-adopt-cross-language-source-layout.md).
+first superseding [ADR-0002](.eadros-core/docs/adr/0002-adopt-cross-language-source-layout.md).
 
 ## 6. Git Workflow
 
@@ -170,7 +186,7 @@ creation in the current session. PR title = lead commit subject.
 - **Label** — **exactly one type label** matching the lead commit's Conventional-Commit
   `type` (one PR = one type).
 - **Milestone** — the current open **roadmap milestone** (`MN — name`, seeded from `ROADMAP.md`;
-  see [`github-setup.md`](docs/workflow/github-setup.md) §5). Create it with
+  see [`github-setup.md`](.eadros-core/docs/workflow/github-setup.md) §5). Create it with
   `gh api repos/:owner/:repo/milestones` if absent.
 - **Project** — the GitHub **Project**, where the repo has one (`--project "<name>"`).
 
@@ -189,7 +205,7 @@ should read in `git log` forever.
 **Pre-PR congruence check (mandatory).** Before drafting any PR, run and pass:
 
 ```bash
-python tools/consistency_lint.py
+python .eadros-core/tools/consistency_lint.py
 ```
 
 It asserts cross-artifact congruence (version lockstep, ADR index ↔ files, catalogued
@@ -202,34 +218,34 @@ Documentation is part of the deliverable. Every PR ships its own doc updates.
 
 - **README.md** — the front door; kept in sync with the public surface and build/test/run
   instructions.
-- **ADRs** — lightweight Michael Nygard records in `docs/adr/`, numbered sequentially.
+- **ADRs** — lightweight Michael Nygard records in `.eadros-core/docs/adr/`, numbered sequentially.
   Open one when a choice affects the public API/compatibility, when two reasonable options
   exist and the rationale is non-obvious, **when a design pattern is adopted** (§8), or when
-  superseding a prior ADR. Template: [`docs/adr/template.md`](docs/adr/template.md).
+  superseding a prior ADR. Template: [`.eadros-core/docs/adr/template.md`](.eadros-core/docs/adr/template.md).
 - **ROADMAP.md** — numbered, checkbox-driven plan. Flip the checkbox in the same PR that
   completes the item. New work goes at the bottom of the relevant section with a fresh
   number. A genuinely new capability is planned first — usually as a new milestone.
-- **Specs** — frozen contracts in `docs/specs/`. If implementation diverges, update the
+- **Specs** — frozen contracts in `.eadros-core/docs/specs/`. If implementation diverges, update the
   spec in the same PR **or** add an ADR explaining the deviation. Never let them drift.
-- **Patterns catalogue** — `docs/patterns/README.md`; see §8.
-- **Session journal** — dated checkpoints in `docs/journal/<YYYY>/<MM>/`, never inline in
+- **Patterns catalogue** — `.eadros-core/docs/patterns/README.md`; see §8.
+- **Session journal** — dated checkpoints in `.eadros-core/docs/journal/<YYYY>/<MM>/`, never inline in
   ROADMAP. One file per session that changed the project's state.
-- **Bug ledger** — `docs/bugs/`, one `BUG-NNNN-<slug>.md` per *verified, reproducible*
-  defect under a discovery-date tree, indexed by `docs/bugs/README.md`. Reproduce and
+- **Bug ledger** — `.eadros-core/docs/bugs/`, one `BUG-NNNN-<slug>.md` per *verified, reproducible*
+  defect under a discovery-date tree, indexed by `.eadros-core/docs/bugs/README.md`. Reproduce and
   root-cause third-party reports before recording; an unsubstantiated report is recorded as
   `cannot-reproduce`/`rejected`/`duplicate`, never as a real defect.
-- **Threat model** — `docs/security/threat-model.md`: the STRIDE pass per trust boundary (the
+- **Threat model** — `.eadros-core/docs/security/threat-model.md`: the STRIDE pass per trust boundary (the
   analysis beside the root `SECURITY.md` policy). Update it in the same PR as any change to a
   trust boundary — a new untrusted input, external service, or privilege change.
-- **Compliance docs (enterprise posture)** — `docs/compliance/`, indexed by
-  [`docs/compliance/README.md`](docs/compliance/README.md): the control register and the evidence
+- **Compliance docs (enterprise posture)** — `.eadros-core/docs/compliance/`, indexed by
+  [`.eadros-core/docs/compliance/README.md`](.eadros-core/docs/compliance/README.md): the control register and the evidence
   each control maps to. A change touching a registered control updates its row in the same PR.
   Under this posture a **security-relevant** decision (authn/authz, crypto, data handling, a trust
   boundary, a dependency with a known CVE surface) **requires an ADR** — it is never an
   undocumented judgment call.
-- **Workflow docs** — `docs/workflow/` holds the git, documentation, release, and maintenance
+- **Workflow docs** — `.eadros-core/docs/workflow/` holds the git, documentation, release, and maintenance
   conventions, plus `github-setup.md` (one-time repo configuration). Distribution:
-  `docs/workflow/packaging.md`.
+  `.eadros-core/docs/workflow/packaging.md`.
 
 
 ## 8. Design Patterns Policy
@@ -240,9 +256,9 @@ value. Therefore:
 1. **Exercise patterns where they fit naturally** — never force-fit.
 2. **Justify every adoption** through an ADR (problem, alternatives, why this pattern),
    linked from the catalogue.
-3. **Record rejections** in `docs/patterns/README.md` under *Rejected*, with the reason.
+3. **Record rejections** in `.eadros-core/docs/patterns/README.md` under *Rejected*, with the reason.
 4. **Use the canonical taxonomy** — pattern names must match
-   [`docs/patterns/design-patterns.md`](docs/patterns/design-patterns.md) (Creational,
+   [`.eadros-core/docs/patterns/design-patterns.md`](.eadros-core/docs/patterns/design-patterns.md) (Creational,
    Structural, Behavioral, EIP, Architectural, Concurrency, Cloud/Distributed, Data &
    Persistence). Scan the relevant category there first.
 
@@ -271,12 +287,12 @@ Every PR must clear, at minimum:
 | Sanitizers / checkers | tsc --strict (type soundness), vitest --detectOpenHandles (leak/handle), eslint --max-warnings 0 green where applicable |
 | Coverage | new code ≥ 80% line (finalized in an ADR) |
 | API docs | `TypeDoc` builds without warnings |
-| Performance claims | backed by a reproducible benchmark under `src/bench/` |
+| Performance claims | backed by a reproducible benchmark under `.eadros-core/src/bench/` |
 | Versioning | SemVer; `CHANGELOG.md` updated for user-visible changes |
-| Congruence | `python tools/consistency_lint.py` passes |
+| Congruence | `python .eadros-core/tools/consistency_lint.py` passes |
 | Review (enterprise) | **two** approving reviews before merge; a security-relevant change also requires the `security-auditor`'s sign-off |
 | Security ADR (enterprise) | every security-relevant decision carries an ADR (§7) — no undocumented judgment calls |
-| Compliance (enterprise) | `docs/compliance/` control register current; a touched control's row updated in the same PR |
+| Compliance (enterprise) | `.eadros-core/docs/compliance/` control register current; a touched control's row updated in the same PR |
 
 Shortcuts ("just disable the warning", "tests next PR", "docs follow-up") are not allowed.
 If something is genuinely out of scope, file it as a new `ROADMAP.md` item in the same PR.
@@ -288,7 +304,7 @@ The project follows **Semantic Versioning 2.0.0**. Tags are annotated, `vMAJOR.M
 - **Pre-1.0 (`0.MINOR.PATCH`)** — `MINOR` increments with each completed roadmap milestone;
   `PATCH` covers hotfixes. (Versioning start: pre-1.0 milestone-driven.)
 - **Post-1.0** — standard SemVer; `MAJOR` for incompatible changes, `MINOR` for additions,
-  `PATCH` for fixes. The maintenance protocol is [`docs/workflow/maintenance.md`](docs/workflow/maintenance.md).
+  `PATCH` for fixes. The maintenance protocol is [`.eadros-core/docs/workflow/maintenance.md`](.eadros-core/docs/workflow/maintenance.md).
 - **`CHANGELOG.md`** — Keep a Changelog 1.1.0 format; every user-visible change adds a line
   to `[Unreleased]` in the same PR.
 - **Agent-vs-human boundary** mirrors §6.1: the agent bumps the version constant

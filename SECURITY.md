@@ -4,7 +4,7 @@
 
 Until `pgs-eadros` reaches `v1.0.0`, only the latest released minor line receives
 security fixes. After `1.0.0`, the supported window is defined in
-[`docs/workflow/maintenance.md`](docs/workflow/maintenance.md).
+[`.eadros-core/docs/workflow/maintenance.md`](.eadros-core/docs/workflow/maintenance.md).
 
 | Version | Supported |
 |---------|-----------|
@@ -28,7 +28,7 @@ Please include:
 1. **Acknowledgement** of the report.
 2. **Triage & fix under embargo** on a private branch / draft advisory; the SemVer level of
    the fix is assessed by the decision tree in
-   [`docs/workflow/maintenance.md`](docs/workflow/maintenance.md).
+   [`.eadros-core/docs/workflow/maintenance.md`](.eadros-core/docs/workflow/maintenance.md).
 3. **Coordinated release**: the fix ships, then the advisory is published. The fix is
    recorded in `CHANGELOG.md` under a **Security** entry with the advisory / CVE reference.
 4. **Backport** to every still-supported release line.

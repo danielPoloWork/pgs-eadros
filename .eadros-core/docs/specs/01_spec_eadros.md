@@ -188,4 +188,4 @@ on a 90-day clock, surfaced by `doctor`).
 
 Toolchain: built with tsup (esbuild) / tsc --build, tested with Vitest (or Jest), checked with
 tsc --strict (type soundness), vitest --detectOpenHandles (leak/handle), eslint --max-warnings 0, coverage target ≥ 80% line. Every functional and
-non-functional requirement above maps to a CI gate (see [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)).
+non-functional requirement above maps to a CI gate (see [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml)).

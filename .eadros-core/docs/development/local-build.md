@@ -30,7 +30,7 @@ eslint . --max-warnings 0 && tsc --noEmit
 pnpm vitest bench
 
 # Cross-artifact congruence (run before drafting any PR)
-python tools/consistency_lint.py
+python .eadros-core/tools/consistency_lint.py
 ```
 
 ## Before you open a PR
@@ -38,6 +38,6 @@ python tools/consistency_lint.py
 1. `prettier --check .` and `eslint . --max-warnings 0 && tsc --noEmit` are clean.
 2. `pnpm test` passes; new/changed behavior is covered (≥ 80% line).
 3. tsc --strict (type soundness), vitest --detectOpenHandles (leak/handle), eslint --max-warnings 0 are green where applicable.
-4. `python tools/consistency_lint.py` passes.
+4. `python .eadros-core/tools/consistency_lint.py` passes.
 5. The relevant docs (README, ROADMAP, ADRs, patterns, changelog) are updated in the same
    PR — see [`../workflow/documentation.md`](../workflow/documentation.md).

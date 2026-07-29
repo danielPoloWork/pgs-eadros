@@ -4,7 +4,7 @@ Living index of every design pattern **adopted**, **planned**, **considered and 
 or **under evaluation** for `pgs-eadros`. Mandatory reading whenever a PR introduces
 or removes a pattern, and updated in the same PR.
 
-- **Rules** — [`AGENTS.md`](../../AGENTS.md) §8.
+- **Rules** — [`AGENTS.md`](../../../AGENTS.md) §8.
 - **Canonical taxonomy** — [`design-patterns.md`](design-patterns.md). All pattern names
   used here, in ADRs, and in commit messages must match its spelling and categorisation.
 
@@ -19,13 +19,13 @@ decides; `enforced` makes conformance to the committed style + adopted patterns 
 
 - **Adding a pattern** — when a PR lands one, add a row to *Implemented / Planned* as
   `Implemented`, with the ADR link and the code location (a real path under
-  `src/main/typescript/...`); a pattern decided in an ADR but not yet in code is added as `Planned`.
+  `.eadros-core/src/main/typescript/...`); a pattern decided in an ADR but not yet in code is added as `Planned`.
 - **Refining** — update the row and link the new ADR.
 - **Rejecting** — add it to *Rejected* with the reason; do not silently drop it.
 - **Removing** — move the row to *Superseded*, link the superseding ADR, keep the history.
 
 Status vocabulary: `Planned` (decided in an ADR, not yet landed) · `Implemented` (present
-in `src/main/...`, ADR `Accepted`) · `Considered` · `Rejected` · `Superseded`.
+in `.eadros-core/src/main/...`, ADR `Accepted`) · `Considered` · `Rejected` · `Superseded`.
 
 ## Implemented / Planned
 

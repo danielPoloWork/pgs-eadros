@@ -34,7 +34,7 @@ Scope: one repository per program, a solo maintainer or small team, at most two 
 posts per week, 6-8 channels. Local-first: one CLI, one SQLite file, no servers.
 
 The frozen specification is in
-[`docs/specs/01_spec_eadros.md`](docs/specs/01_spec_eadros.md).
+[`.eadros-core/docs/specs/01_spec_eadros.md`](.eadros-core/docs/specs/01_spec_eadros.md).
 
 ## Build, test, run
 
@@ -47,7 +47,7 @@ pnpm test
 - **Supported platforms:** Linux / Windows / macOS on Node 22, 24 LTS.
 - Consumers import the public surface via: `import { ... } from '@d4np/eadros';`.
 
-See [`docs/development/local-build.md`](docs/development/local-build.md) for the full local
+See [`.eadros-core/docs/development/local-build.md`](.eadros-core/docs/development/local-build.md) for the full local
 setup.
 
 ## How this project is run
@@ -56,9 +56,9 @@ setup.
 |---|---|
 | [`AGENTS.md`](AGENTS.md) | How AI agents (and humans) work in this repo — the contract. |
 | [`ROADMAP.md`](ROADMAP.md) | The numbered plan and what is done. |
-| [`docs/adr/`](docs/adr/) | Why it is built the way it is (Architecture Decision Records). |
-| [`docs/patterns/`](docs/patterns/) | Design patterns adopted, rejected, or considered. |
-| [`docs/workflow/`](docs/workflow/) | Git, documentation, release, and maintenance conventions. |
+| [`.eadros-core/docs/adr/`](.eadros-core/docs/adr/) | Why it is built the way it is (Architecture Decision Records). |
+| [`.eadros-core/docs/patterns/`](.eadros-core/docs/patterns/) | Design patterns adopted, rejected, or considered. |
+| [`.eadros-core/docs/workflow/`](.eadros-core/docs/workflow/) | Git, documentation, release, and maintenance conventions. |
 | [`CHANGELOG.md`](CHANGELOG.md) | User-visible changes per release. |
 | [`SECURITY.md`](SECURITY.md) | How to report a vulnerability. |
 

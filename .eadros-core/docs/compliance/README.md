@@ -2,7 +2,7 @@
 
 The **control register** for `pgs-eadros`, present because this project runs under the
 **enterprise governance posture** (`governance.posture: enterprise`, ADR-0015; see
-[`AGENTS.md`](../../AGENTS.md) §3/§7/§10). It records the controls the project commits to and the
+[`AGENTS.md`](../../../AGENTS.md) §3/§7/§10). It records the controls the project commits to and the
 **evidence** each one maps to — so a reviewer can trace a claim ("access is authenticated",
 "secrets never land in logs") to the artifact that substantiates it, not to a memory.
 

@@ -1,7 +1,7 @@
 # Git Workflow
 
 Full conventions for branches, commits, and pull requests on `pgs-eadros`. The short
-version is in [`AGENTS.md`](../../AGENTS.md) §6; this document expands it with examples.
+version is in [`AGENTS.md`](../../../AGENTS.md) §6; this document expands it with examples.
 
 ## 1. Boundary between agent and human
 
@@ -53,7 +53,7 @@ message — see [`github-setup.md`](github-setup.md) §1). Write them accordingl
 - **Subject** = the lead commit's Conventional-Commit one-liner (`<type>(<scope>): <subject>`,
   ≤72 chars). This is the PR title.
 - **Body** = a verbose, professional summary — **never** just the subject collapsed to one line.
-  Follow [`.github/PULL_REQUEST_TEMPLATE.md`](../../.github/PULL_REQUEST_TEMPLATE.md), whose
+  Follow [`.github/PULL_REQUEST_TEMPLATE.md`](../../../.github/PULL_REQUEST_TEMPLATE.md), whose
   sections map straight into a good squash body: **what** changed and **why** (context /
   motivation), the meaningful **changes**, and how it was **verified**. Footers (`Refs:`,
   `BREAKING CHANGE:`, `Closes #NN`) belong at the end.
@@ -80,7 +80,7 @@ item for traceability; the flags above *set* the GitHub fields.
 
 1. Branch off `master`.
 2. Make changes; commit in logical units.
-3. `python tools/consistency_lint.py` — must pass.
+3. `python .eadros-core/tools/consistency_lint.py` — must pass.
 4. Push; prepare the PR body. If authorized, draft it **with the metadata flags**:
 
    ```bash

@@ -23,15 +23,15 @@ Link to the spec section, ADR, roadmap item, or issue that prompted this work.
 - [ ] `Prettier` clean; `ESLint (typescript-eslint, type-aware) + tsc --noEmit --strict` clean on the diff
 - [ ] tsc --strict (type soundness), vitest --detectOpenHandles (leak/handle), eslint --max-warnings 0 green (where applicable)
 - [ ] Benchmark numbers attached (when perf-relevant)
-- [ ] `python tools/consistency_lint.py` passes
+- [ ] `python .eadros-core/tools/consistency_lint.py` passes
 
 ## Documentation Impact
 
 - [ ] README.md updated (if user-facing surface changed)
 - [ ] ROADMAP.md checkbox flipped
 - [ ] ADR added/updated (if a non-trivial design decision was made)
-- [ ] docs/patterns/README.md updated (if a pattern was introduced, refined, or rejected)
-- [ ] Spec updated (if behavior diverges from `docs/specs/`)
+- [ ] .eadros-core/docs/patterns/README.md updated (if a pattern was introduced, refined, or rejected)
+- [ ] Spec updated (if behavior diverges from `.eadros-core/docs/specs/`)
 - [ ] CHANGELOG.md updated (for user-visible changes)
 - [ ] PR metadata set — assignee (the owner), one type label, release milestone, project (where present)
 

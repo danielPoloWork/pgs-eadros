@@ -3,8 +3,8 @@
 - **Status:** In review
 - **Author:** tech-lead · **Reviewers:** reviewer + enterprise-architect (cross-cutting) · **Approver:** tech-lead
 - **Date:** 2026-07-29
-- **Related:** [spec](../../.specs/19_spec_eadros_devrel_os_summary.md) · ADR-0001…ADR-0016 ·
-  [manifest](../../orchestrator/project.yaml) (`delivery_state.phase: design`) · milestones M2–M8
+- **Related:** [spec](../../../.specs/19_spec_eadros_devrel_os_summary.md) · ADR-0001…ADR-0016 ·
+  [manifest](../../../orchestrator/project.yaml) (`delivery_state.phase: design`) · milestones M2–M8
 
 > Written *before* the code. Every claim below is sourced to an artifact in this repository; where
 > this RFC **proposes** something the specification does not yet state, it is marked
@@ -15,12 +15,12 @@
 High-quality open-source projects fail from **absent distribution, not absent quality**. Maintainers
 have no time for Developer Relations, and generic social-media tooling produces the promotional
 register developer communities reject on sight
-([PROBLEM_STATEMENT](../../.specs/docs-eadros/vision/PROBLEM_STATEMENT.md)).
+([PROBLEM_STATEMENT](../../../.specs/docs-eadros/vision/PROBLEM_STATEMENT.md)).
 
 **What forces a decision now.** The specification is complete — 16 ADRs, the C4 views, the data
 model, the state machine, the event contract, the intake interview and the verification strategy —
 and **no implementation exists**: every `Impl` box in the
-[roadmap](../../.specs/docs-eadros/roadmap/MVP.md) is unchecked, and that is the accurate state.
+[roadmap](../../../.specs/docs-eadros/roadmap/MVP.md) is unchecked, and that is the accurate state.
 Code begins at milestone M2 (*Foundation*). The delivery contract requires the design frozen,
 reviewed and gated before it does, which is what this RFC is for.
 
@@ -53,7 +53,7 @@ decides which SQLite bindings exist, and the binding's packaging decides the sha
 pipeline.** Three of nine components hold a model — Angle, Copywriter, Reviewer — which is where
 judgment genuinely lives: framing, writing, critique. The other six carry a **guarantee** rather
 than a judgment, and a guarantee implemented in a prompt can only ever be an aspiration
-([COMPONENTS](../../.specs/docs-eadros/architecture/COMPONENTS.md)).
+([COMPONENTS](../../../.specs/docs-eadros/architecture/COMPONENTS.md)).
 
 **D2 — The capability tier is derived from each destination's dated profile and stated to the
 maintainer, never offered as a choice.** They choose *whether* to use a channel; the profile decides
@@ -67,7 +67,7 @@ evaluates eight stages — `secrets`, `deny_terms`, `paths`, `diff_cap`, `embarg
 dispatch**. `secrets` and `taint` have no off switch. Running on inputs is what stops injection:
 filtering only outputs would mean the injected instruction had already executed with credentials in
 hand. The input stages `paths`/`embargo`/`taint` run at **mining** time, so an ineligible commit
-never becomes a candidate (ADR-0014, [mine](../../.specs/docs-eadros/commands/mine.md)).
+never becomes a candidate (ADR-0014, [mine](../../../.specs/docs-eadros/commands/mine.md)).
 
 **D4 — One process, one SQLite file, no services.** WAL mode, `STRICT` tables, ULID `TEXT`
 identifiers, ISO-8601 UTC timestamps, structured columns guarded by `json_valid()`. State, content,
@@ -87,7 +87,7 @@ constraints carry the product's central claims structurally:
 **D6 — `.eadros-core/` is the installation root.** Every asset the product installs is contained in
 that directory: one directory to install, to upgrade, to inspect and to remove. The specification
 already treats it as the movable unit — `upgrade` migrates `.eadros-core/` plus the manifest to a
-newer core version ([upgrade](../../.specs/docs-eadros/commands/upgrade.md)) — and this decision
+newer core version ([upgrade](../../../.specs/docs-eadros/commands/upgrade.md)) — and this decision
 makes the containment a property of the design rather than a convention. *Confirmed by the maintainer
 on 2026-07-29; to be preserved through every later phase and recorded as an ADR (see Open items).*
 
@@ -167,7 +167,7 @@ target with a trigger rather than dismissed.
 ### API contract (`api` / `systemdesign`)
 
 The consumer surface is a **CLI**, aligned with spec §5 and
-[commands/README](../../.specs/docs-eadros/commands/README.md).
+[commands/README](../../../.specs/docs-eadros/commands/README.md).
 
 **Operations** — 23 commands in five groups (22 documented entries: `pause` / `resume` share one):
 
@@ -208,7 +208,7 @@ of which the specification versions explicitly today:
 1. **CLI surface** — SemVer on the package. MAJOR = removing or renaming a command or flag, or
    changing a default that changes what ships.
 2. **Event contract** — the version is *in the type*: `dev.eadros.<domain>.<event>.v<N>`
-   ([EVENTS](../../.specs/docs-eadros/architecture/EVENTS.md)). A breaking change publishes `.v2`
+   ([EVENTS](../../../.specs/docs-eadros/architecture/EVENTS.md)). A breaking change publishes `.v2`
    alongside `.v1`; it is never a silent reshape of `.v1`.
 3. **Store schema** — a forward-only migration series (see the Data fold). MAJOR = a migration that
    is not forward-compatible with the previous release's reader.
@@ -222,7 +222,7 @@ Within ADR-0004's frame: SQL is the **secondary** language declared at interview
 (`language.secondary_lang: sql`), never a primary profile.
 
 **Entities** — 19 tables in five groups
-([DATA_MODEL](../../.specs/docs-eadros/architecture/DATA_MODEL.md)):
+([DATA_MODEL](../../../.specs/docs-eadros/architecture/DATA_MODEL.md)):
 
 - *Pipeline* — `repos`, `candidates`, `campaigns`, `drafts`
 - *Governance* — `claims`, `gate_verdicts`, `approvals`, `rejections`
@@ -238,7 +238,7 @@ failed on a third) representable rather than a contradiction between two status 
 learning loop.
 
 **Normalization — the target form is a PROPOSAL, needs approval.** The four denormalizations below
-are each stated by the specification ([DATA_MODEL](../../.specs/docs-eadros/architecture/DATA_MODEL.md)
+are each stated by the specification ([DATA_MODEL](../../../.specs/docs-eadros/architecture/DATA_MODEL.md)
 §"Rules are denormalised at the moment they were applied"); the *target normal form* is not, and this
 RFC proposes **third normal form** as the baseline the deviations are measured against. Each
 deviation exists because an audit that explains last month's post using this month's rules is not an
@@ -293,7 +293,7 @@ and each sits in deterministic code **precisely so it can be gated at 100%**.
 
 The miner is the one non-obvious core algorithm: it is the system's real intellectual property, and
 it is the whole cost bound. Language-free, from
-[mine](../../.specs/docs-eadros/commands/mine.md):
+[mine](../../../.specs/docs-eadros/commands/mine.md):
 
 ```
 mine(window):
@@ -458,19 +458,19 @@ Two consequences must be carried out **after** approval, and are named here so t
 
 ## References
 
-- [Specification summary](../../.specs/19_spec_eadros_devrel_os_summary.md) — the six-section source
-- Architecture: [SYSTEM_CONTEXT](../../.specs/docs-eadros/architecture/SYSTEM_CONTEXT.md) ·
-  [CONTAINERS](../../.specs/docs-eadros/architecture/CONTAINERS.md) ·
-  [COMPONENTS](../../.specs/docs-eadros/architecture/COMPONENTS.md) ·
-  [DATA_MODEL](../../.specs/docs-eadros/architecture/DATA_MODEL.md) ·
-  [EVENTS](../../.specs/docs-eadros/architecture/EVENTS.md) ·
-  [STATE_MACHINE](../../.specs/docs-eadros/architecture/STATE_MACHINE.md)
-- Decisions: [ADR-0011 tiers](../../.specs/docs-eadros/adr/ADR-0011-channel-capability-tiers.md) ·
-  [ADR-0012 voice](../../.specs/docs-eadros/adr/ADR-0012-voice-profile-and-calibration.md) ·
-  [ADR-0013 cost](../../.specs/docs-eadros/adr/ADR-0013-cost-control-and-model-routing.md) ·
-  [ADR-0014 gate](../../.specs/docs-eadros/adr/ADR-0014-deterministic-pre-publish-gate.md) ·
-  [ADR-0015 attribution](../../.specs/docs-eadros/adr/ADR-0015-attribution-methodology.md) ·
-  [ADR-0016 store](../../.specs/docs-eadros/adr/ADR-0016-local-first-single-file-store.md)
-- Verification: [eval strategy](../../.specs/docs-eadros/eval/README.md)
-- Roadmap: [MVP](../../.specs/docs-eadros/roadmap/MVP.md)
-- Command surface: [commands/README](../../.specs/docs-eadros/commands/README.md)
+- [Specification summary](../../../.specs/19_spec_eadros_devrel_os_summary.md) — the six-section source
+- Architecture: [SYSTEM_CONTEXT](../../../.specs/docs-eadros/architecture/SYSTEM_CONTEXT.md) ·
+  [CONTAINERS](../../../.specs/docs-eadros/architecture/CONTAINERS.md) ·
+  [COMPONENTS](../../../.specs/docs-eadros/architecture/COMPONENTS.md) ·
+  [DATA_MODEL](../../../.specs/docs-eadros/architecture/DATA_MODEL.md) ·
+  [EVENTS](../../../.specs/docs-eadros/architecture/EVENTS.md) ·
+  [STATE_MACHINE](../../../.specs/docs-eadros/architecture/STATE_MACHINE.md)
+- Decisions: [ADR-0011 tiers](../../../.specs/docs-eadros/adr/ADR-0011-channel-capability-tiers.md) ·
+  [ADR-0012 voice](../../../.specs/docs-eadros/adr/ADR-0012-voice-profile-and-calibration.md) ·
+  [ADR-0013 cost](../../../.specs/docs-eadros/adr/ADR-0013-cost-control-and-model-routing.md) ·
+  [ADR-0014 gate](../../../.specs/docs-eadros/adr/ADR-0014-deterministic-pre-publish-gate.md) ·
+  [ADR-0015 attribution](../../../.specs/docs-eadros/adr/ADR-0015-attribution-methodology.md) ·
+  [ADR-0016 store](../../../.specs/docs-eadros/adr/ADR-0016-local-first-single-file-store.md)
+- Verification: [eval strategy](../../../.specs/docs-eadros/eval/README.md)
+- Roadmap: [MVP](../../../.specs/docs-eadros/roadmap/MVP.md)
+- Command surface: [commands/README](../../../.specs/docs-eadros/commands/README.md)

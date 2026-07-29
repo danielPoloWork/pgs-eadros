@@ -11,13 +11,13 @@ is the source of truth.**
 - **Language:** every artifact (code, docs, commits, branches, PRs) is in **English**. User
   conversation may be in another language; output that lands on disk stays English. §2.
 - **Source layout:** Maven-style cross-language tree. All code under
-  `src/main/typescript/dev/d4np/eadros/` (tests under `src/test/...`,
-  benchmarks under `src/bench/...`). Namespace `@d4np/eadros`. See §5.
+  `.eadros-core/src/main/typescript/dev/d4np/eadros/` (tests under `.eadros-core/src/test/...`,
+  benchmarks under `.eadros-core/src/bench/...`). Namespace `@d4np/eadros`. See §5.
 - **Git:** agents commit, push, and *draft* PRs on feature branches. **The user opens and
   merges PRs manually.** One roadmap item per PR, **one PR at a time — wait for the merge
   before starting the next item; no stacked PRs.** Conventional Commits, branch
   `<type>/<short-kebab>`. See §6.
-- **Docs:** every PR keeps `README.md`, `ROADMAP.md`, `docs/adr/`, and `docs/patterns/` in
+- **Docs:** every PR keeps `README.md`, `ROADMAP.md`, `.eadros-core/docs/adr/`, and `.eadros-core/docs/patterns/` in
   sync. Non-trivial design choices need an ADR. See §7.
 - **Design patterns:** apply classical patterns where they fit; every adoption justified in
   an ADR + catalogued. Never force-fit. See §8.
@@ -30,7 +30,7 @@ is the source of truth.**
 ## Claude Code specifics
 
 - Use the planning / task tools for any multi-step work.
-- Run `python tools/consistency_lint.py` before drafting a PR.
+- Run `python .eadros-core/tools/consistency_lint.py` before drafting a PR.
 - Never push to `master`. Never run `git merge` or `gh pr merge`. Draft PRs only
   — the user clicks "Create" and "Merge".
 

@@ -2,7 +2,7 @@
 
 How documentation is maintained on `pgs-eadros`. Documentation is part of the
 deliverable — every PR ships its own doc updates in the same PR. The rules are in
-[`AGENTS.md`](../../AGENTS.md) §7; this expands the *how*.
+[`AGENTS.md`](../../../AGENTS.md) §7; this expands the *how*.
 
 ## Artifacts and when to touch them
 
@@ -21,7 +21,7 @@ deliverable — every PR ships its own doc updates in the same PR. The rules are
 
 A change to code and its documentation belong to the **same** pull request. "Docs
 follow-up" is not allowed (`AGENTS.md` §10). The consistency lint
-(`python tools/consistency_lint.py`) mechanically enforces the parts of this that can be
+(`python .eadros-core/tools/consistency_lint.py`) mechanically enforces the parts of this that can be
 checked: version lockstep, ADR index ↔ files, pattern rows ↔ ADR+code, spec coverage map,
 README ↔ ROADMAP milestone agreement, and bug-ledger integrity.
 

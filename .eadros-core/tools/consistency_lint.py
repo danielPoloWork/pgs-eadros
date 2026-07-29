@@ -6,7 +6,7 @@
 A dependency-free (Python 3 standard library only) checker that asserts the project is
 internally congruent after any change. Run from anywhere in the repo:
 
-    python tools/consistency_lint.py
+    python .eadros-core/tools/consistency_lint.py
 
 It exits non-zero with an actionable report when a congruence invariant is violated. The
 contract (the "congruence checks"):
@@ -53,7 +53,14 @@ CONFIG = {
     "i18n_enabled": False,
 }
 
+# Two roots, because the project tree and the repository root are no longer the same place
+# (ADR-0003). ROOT is `.eadros-core/` — everything the product owns: docs/**, src/**, tools/**.
+# REPO_ROOT is the repository itself, holding the files GitHub and the agents read from a fixed
+# location: README.md, ROADMAP.md, AGENTS.md, .github/. This mirrors the factory's own
+# eados_lint.py, which splits ROOT from REPO_ROOT for exactly this reason. ROOT is derived from
+# __file__ rather than the cwd, so both stay correct wherever the lint is invoked from.
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO_ROOT = os.path.dirname(ROOT)
 failures = []  # list of (check_name, message)
 
 
@@ -68,6 +75,16 @@ def read(*parts):
 
 def exists(rel):
     return os.path.exists(os.path.join(ROOT, rel))
+
+
+def read_repo(*parts):
+    """Read a file that lives at the REPOSITORY root, not inside `.eadros-core/` (ADR-0003)."""
+    with open(os.path.join(REPO_ROOT, *parts), encoding="utf-8") as handle:
+        return handle.read()
+
+
+def exists_repo(rel):
+    return os.path.exists(os.path.join(REPO_ROOT, rel))
 
 
 def git(*args):
@@ -90,7 +107,7 @@ def semver_tuple(text):
 # ---------------------------------------------------------------------------
 def check_version_lockstep():
     name = "version-lockstep"
-    readme = read("README.md")
+    readme = read_repo("README.md")
     bm = re.search(r"Status-v(\d+\.\d+\.\d+)", readme)
     if bm is None:
         fail(name, "no `Status-vX.Y.Z` badge found in README.md")
@@ -199,7 +216,7 @@ def check_patterns():
 # ---------------------------------------------------------------------------
 def check_spec_map():
     name = "spec-map"
-    roadmap = read("ROADMAP.md")
+    roadmap = read_repo("ROADMAP.md")
     block = re.search(r"## Spec Coverage Map.*?(?=\n## |\Z)", roadmap, re.DOTALL)
     if block is None:
         fail(name, "no '## Spec Coverage Map' section in ROADMAP.md")
@@ -228,8 +245,8 @@ def check_spec_map():
 # ---------------------------------------------------------------------------
 def check_milestones():
     name = "milestones"
-    readme = read("README.md")
-    roadmap = read("ROADMAP.md")
+    readme = read_repo("README.md")
+    roadmap = read_repo("ROADMAP.md")
     readme_status = {}
     for m in re.finditer(r"^\|\s*(\d+)\s*\|[^|]+\|\s*([^|]+?)\s*\|$", readme, re.MULTILINE):
         readme_status[int(m.group(1))] = "✅" in m.group(2)
@@ -376,7 +393,7 @@ _ENTERPRISE_MARKER = "enterprise governance posture"
 
 def check_posture():
     name = "posture"
-    agents = read("AGENTS.md") if exists("AGENTS.md") else ""
+    agents = read_repo("AGENTS.md") if exists_repo("AGENTS.md") else ""
     declared = _ENTERPRISE_MARKER in agents
     register = exists("docs/compliance/README.md")
     if declared and not register:

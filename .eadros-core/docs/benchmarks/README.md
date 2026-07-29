@@ -2,7 +2,7 @@
 
 Reproducible performance measurements for `pgs-eadros`. Any performance claim in the
 spec, README, or a PR must be backed by a benchmark here and by code under
-`src/bench/typescript/dev/d4np/eadros/`. Numbers without a reproducible method
+`.eadros-core/src/bench/typescript/dev/d4np/eadros/`. Numbers without a reproducible method
 are not evidence.
 
 ## Methodology

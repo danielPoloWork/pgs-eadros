@@ -3,7 +3,7 @@
 The mechanical step-by-step for cutting a release of `pgs-eadros`. The governance
 (which SemVer level, how a fix flows, deprecation/security) is in
 [`maintenance.md`](maintenance.md); the agent-vs-human boundary is
-[`AGENTS.md`](../../AGENTS.md) §11.
+[`AGENTS.md`](../../../AGENTS.md) §11.
 
 ## Versioning
 
@@ -22,7 +22,7 @@ pre-1.0 milestone-driven.
 3. **Refresh the README** status badge (and milestone table on a MINOR that closes a
    milestone).
 4. **Draft release notes** under `docs/releases/v<X.Y.Z>.md`.
-5. **Run the consistency lint** (`python tools/consistency_lint.py`) — version lockstep must
+5. **Run the consistency lint** (`python .eadros-core/tools/consistency_lint.py`) — version lockstep must
    pass.
 6. **Open the release PR** — *the maintainer does this*. The agent prepares it.
 7. **Merge** — *the maintainer*.

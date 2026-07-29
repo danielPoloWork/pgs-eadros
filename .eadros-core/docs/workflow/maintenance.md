@@ -3,7 +3,7 @@
 How `pgs-eadros` is governed in the maintained-product phase (post-`v1.0.0`): how to
 decide a release's SemVer level, how a fix reaches users, how security issues and
 deprecations are handled. The mechanical release steps are in [`release.md`](release.md);
-the agent-vs-human boundary is [`AGENTS.md`](../../AGENTS.md) §11.
+the agent-vs-human boundary is [`AGENTS.md`](../../../AGENTS.md) §11.
 
 ## What the version number protects
 
@@ -45,7 +45,7 @@ A hotfix is always the smallest change that fixes the defect — no refactors ri
 
 ## Security fixes
 
-Report privately (see [`SECURITY.md`](../../SECURITY.md)); triage & fix under embargo;
+Report privately (see [`SECURITY.md`](../../../SECURITY.md)); triage & fix under embargo;
 coordinated release then advisory; record under a `Security` changelog entry with the
 advisory/CVE; backport to every supported line.
 
@@ -58,7 +58,7 @@ advisory/CVE; backport to every supported line.
 
 ## Consistency lint — failure → remediation
 
-`python tools/consistency_lint.py` runs before every PR and in CI. Each failure prints
+`python .eadros-core/tools/consistency_lint.py` runs before every PR and in CI. Each failure prints
 `[check] message`; fix per the check's intent (version lockstep, ADR index, pattern rows,
 spec coverage map, milestone agreement, bug-ledger integrity). See the lint's docstring for
 the full contract.

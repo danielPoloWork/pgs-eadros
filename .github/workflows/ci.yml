@@ -102,7 +102,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Run the consistency lint
-        run: python tools/consistency_lint.py
+        run: python .eadros-core/tools/consistency_lint.py
 
   # ---------------------------------------------------------------------------
   # Language-specific quality jobs (format, lint, sanitizers, …) from the profile.

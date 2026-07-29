@@ -5,7 +5,7 @@ flip its checkbox (`- [ ]` → `- [x]`) **in the same PR**. New work goes at the
 its section with a fresh `<milestone>.<task>` number; never renumber.
 
 - **Versioning start:** pre-1.0 milestone-driven.
-- **Session journal:** see [`docs/journal/`](docs/journal/). Latest checkpoint: _none yet_.
+- **Session journal:** see [`.eadros-core/docs/journal/`](.eadros-core/docs/journal/). Latest checkpoint: _none yet_.
 
 ## Model & effort routing (advisory)
 
@@ -34,9 +34,9 @@ labels exist is `python .eados-core/tools/route_advice.py --issue <N>`.
 The thinnest slice that compiles, tests, and ships under the full quality bar.
 
 - [ ] 1.1 Lay down the build system (tsup (esbuild) / tsc --build) and a buildable skeleton under
-      `src/main/typescript/dev/d4np/eadros/`.
+      `.eadros-core/src/main/typescript/dev/d4np/eadros/`.
 - [ ] 1.2 Wire the test framework (Vitest (or Jest)) with one passing smoke test under
-      `src/test/typescript/dev/d4np/eadros/`.
+      `.eadros-core/src/test/typescript/dev/d4np/eadros/`.
 - [ ] 1.3 Add formatter + linter configs (Prettier, ESLint (typescript-eslint, type-aware) + tsc --noEmit --strict) at the repo root.
 - [ ] 1.4 Stand up the CI matrix (Linux / Windows / macOS on Node 22, 24 LTS) with build + test + format + lint.
 - [ ] 1.5 Seed the version constant (export const VERSION = 'X.Y.Z') in `version.ts`.

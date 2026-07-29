@@ -87,7 +87,7 @@ Private vulnerability reporting (the SECURITY.md target) is enabled in the web U
 ## 5. Roadmap milestones — seed every `MN — name`
 
 PRs are delivered against the **roadmap milestones** (AGENTS.md §6.4), so seed **all** of them
-from [`ROADMAP.md`](../../ROADMAP.md) up front — the board is then complete before milestone-scoped
+from [`ROADMAP.md`](../../../ROADMAP.md) up front — the board is then complete before milestone-scoped
 delivery begins. Each is titled `MN — <name>` (em-dash, matching the `## Milestone N — <name>`
 headers) with a professional description from the milestone's Goal.
 

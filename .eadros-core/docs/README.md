@@ -23,13 +23,13 @@ conversational context and scratch notes do not live here.
 
 ## Reading order for newcomers
 
-1. [`/README.md`](../README.md) — what this project is.
-2. [`/AGENTS.md`](../AGENTS.md) — how agents (and humans) work in this repo.
+1. [`/README.md`](../../README.md) — what this project is.
+2. [`/AGENTS.md`](../../AGENTS.md) — how agents (and humans) work in this repo.
 3. [`specs/01_spec_eadros.md`](specs/01_spec_eadros.md) — what we are building.
 4. [`development/local-build.md`](development/local-build.md) — how to build and test it.
 5. [`adr/`](adr/) — why we built it that way.
 6. [`patterns/`](patterns/) — which design patterns we exercise and why.
-7. [`/ROADMAP.md`](../ROADMAP.md) — what is done and what is next.
+7. [`/ROADMAP.md`](../../ROADMAP.md) — what is done and what is next.
 
 ## Conventions
 
